@@ -1,23 +1,42 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SocialConnect.Infrastructure.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// MVC
 builder.Services.AddControllersWithViews();
 
-var app = builder.Build();
+// DbContext
+string connectionString = builder.Configuration.GetConnectionString("SocialDbContext");
+builder.Services.AddDbContext<SocialDbContext>(context => context.UseSqlServer(connectionString));
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
+// Identity
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+                {
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequiredLength = 8;
+                    options.Password.RequireDigit = true;
+                    options.Password.RequiredUniqueChars = 0;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireLowercase = false;
+
+                    options.User.RequireUniqueEmail = true;
+                })
+                .AddEntityFrameworkStores<SocialDbContext>();
+
+// Authentication & Authorization
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+
+var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
