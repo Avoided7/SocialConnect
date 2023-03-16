@@ -1,0 +1,33 @@
+﻿@model LoginUserDto
+@{
+    ViewData["Title"] = "Login!";
+}
+
+<form method="post">
+    <div class="card border-3 col-md-4">
+        <div class="card-header">
+            <span style="font-size: 32px;"><b>Login</b></span>
+            <br />
+            <span style="color: lightslategrey">Your best profile</span>
+        </div>
+        <div class="card-body">
+            <div class="card-text mb-3">
+                <input class="form-control" style="font-size: 18px;" asp-for="Username" placeholder="Username" />
+                <span class="text-danger" asp-validation-for="Username"></span>
+            </div>
+            <div class="card-text mb-3">
+                <input class="form-control" style="font-size: 18px;" asp-for="Password" placeholder="Password" />
+                <span class="text-danger" asp-validation-for="Password"></span>
+            </div>
+            <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+            <div class="row" style="margin: 5px;">
+                <button class="btn btn-primary"><b>Enter</b></button>
+                <a class="text-center" asp-action="Recover" style="text-decoration: none;">Forgot password?</a>
+            </div>
+            <hr />
+            <div class="row" style="margin: 5px;">
+                <a class="btn btn-success" asp-action="Register" style="text-decoration: none;"><b>Create account</b></a>
+            </div>
+        </div>
+    </div>
+</form>

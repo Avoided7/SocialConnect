@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="ViewModels\" />
+    <Compile Remove="ViewModels\**" />
+    <Content Remove="ViewModels\**" />
+    <EmbeddedResource Remove="ViewModels\**" />
+    <None Remove="ViewModels\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SocialConnect.Domain\SocialConnect.Domain.csproj" />
+    <ProjectReference Include="..\SocialConnect.Entity\SocialConnect.Entity.csproj" />
     <ProjectReference Include="..\SocialConnect.Infrastructure\SocialConnect.Infrastructure.csproj" />
     <ProjectReference Include="..\SocialConnect.Shared\SocialConnect.Shared.csproj" />
   </ItemGroup>

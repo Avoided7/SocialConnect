@@ -1,4 +1,4 @@
-﻿namespace SocialConnect.Domain.Enums
+﻿namespace SocialConnect.Entity.Enums
 {
     public enum Gender
     {

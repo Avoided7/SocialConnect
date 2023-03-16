@@ -1,0 +1,50 @@
+﻿@model RegisterUserDto
+
+@{
+    ViewData["Title"] = "Create your best profile =)";
+}
+
+<style>
+    .form-control
+    {
+        font-size: 18px;
+    }
+</style>
+
+<form method="post">
+    <div class="card border-3 col-md-4 offset-4">
+        <div class="card-header">
+            <span style="font-size: 32px;"><b>Registration</b></span>
+            <br/>
+            <span style="color: lightslategrey">Fast & easy</span>
+        </div>
+        <div class="card-body">
+            <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+            <input class="form-control mb-3" style="width: 49%; float: left; margin-right: 5px;" asp-for="Firstname" placeholder="First name" />
+            <span class="text-danger" asp-validation-for="Firstname"></span>
+            <input class="form-control mb-3" style="width: 49%; float: right;" asp-for="Lastname" placeholder="Last name" />
+            <span class="text-danger" asp-validation-for="Lastname"></span>
+            <input class="form-control mb-3" asp-for="Username" placeholder="Username" />
+            <span class="text-danger" asp-validation-for="Username"></span>
+
+
+            <label class="form-label" style="color: lightslategrey; font-size: 14px;" asp-for="DateOfBirth"></label>
+            <input class="form-control mb-3" asp-for="DateOfBirth" placeholder="Date of birthday" />
+
+            <label class="form-label" style="color: lightslategrey; font-size: 14px;" asp-for="Gender"></label>
+            <select class="form-control mb-3" asp-for="Gender" asp-items="@Html.GetEnumSelectList<Gender>()"></select>
+
+            <input class="form-control mb-3" asp-for="Email" placeholder="Email" />
+            <span class="text-danger" asp-validation-for="Email"></span>
+
+            <input class="form-control mb-3" asp-for="Password" placeholder="Password" />
+            <span class="text-danger" asp-validation-for="Password"></span>
+            <input class="form-control mb-3" asp-for="PasswordConfirm" placeholder="Confirm password" />
+            <span class="text-danger" asp-validation-for="PasswordConfirm"></span>
+            <hr/>
+            <div class="row" style="margin: 5px;">
+                <button class="btn btn-success"><b>Registration</b></button>
+            </div>
+        </div>
+    </div>
+</form>
