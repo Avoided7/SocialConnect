@@ -18,6 +18,7 @@
     <li>Minigames points</li>
     <li>Inventory</li>
     <li>Notification settings</li>
+    <li>Status & achievements</li>
   </ul>
 </ul>
 
