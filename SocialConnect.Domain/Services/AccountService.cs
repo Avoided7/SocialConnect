@@ -10,12 +10,15 @@ namespace SocialConnect.Domain.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IEmailService _emailService;
 
         public AccountService(UserManager<User> userManager,
-                              SignInManager<User> signInManager)
+                              SignInManager<User> signInManager,
+                              IEmailService emailService)
         { 
             this._userManager = userManager;
             this._signInManager = signInManager;
+            this._emailService = emailService;
         }
 
         public async Task<ResponseDto<UserDto>> FindByIdAsync(string id)
@@ -87,7 +90,6 @@ namespace SocialConnect.Domain.Services
             IdentityResult createdUser = await _userManager.CreateAsync(user, registerDto.Password);
 
             ResponseDto<UserDto> response = new ResponseDto<UserDto>();
-            
             if(!createdUser.Succeeded)
             {
                 response.Errors = new List<string>(createdUser.Errors.Select(error => error.Description));
@@ -95,6 +97,14 @@ namespace SocialConnect.Domain.Services
             else
             {
                 response.Content = user.ConvertToDto();
+                string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                EmailDto emailDto = new EmailDto()
+                {
+                    Subject = "Confirm email",
+                    Content = $"<h1>Confirm email</h1> <a href=https://localhost:7035/Account/Confirmation/?userid={user.Id}&token={token}>Click here to confirm email</a>",
+                    Reciever = registerDto.Email
+                };
+                await _emailService.SendAsync(emailDto);
             }
 
             return response;
@@ -106,6 +116,34 @@ namespace SocialConnect.Domain.Services
             await _userManager.DeleteAsync(user);
             ResponseDto<DateTime> response = new ResponseDto<DateTime> { Content = DateTime.UtcNow };
             return response;
+        }
+
+        public async Task<ResponseDto<UserDto>> ConfirmAsync(string userId, string token)
+        {
+            User? user = await _userManager.FindByIdAsync(userId);
+            ResponseDto<UserDto> response = new ResponseDto<UserDto>();
+            if (user == null)
+            {
+                response.Errors = new List<string> { "User not found." };
+                return response;
+            }
+
+            IdentityResult confirmResult = await _userManager.ConfirmEmailAsync(user, token);
+
+            if(!confirmResult.Succeeded)
+            {
+                response.Errors = new List<string>
+                {
+                    "Incorrect token."
+                };
+            }
+            else
+            {
+                response.Content = user.ConvertToDto();
+            }
+
+            return response;
+
         }
 
         public async Task<ResponseDto<DateTime>> LogoutAsync()

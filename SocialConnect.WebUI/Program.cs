@@ -3,6 +3,8 @@ using SocialConnect.Entity.Models;
 using SocialConnect.Domain.Services;
 using SocialConnect.Domain.Services.Interfaces;
 using SocialConnect.Infrastructure.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,7 @@ builder.Services.AddAuthorization();
 
 // Services
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 

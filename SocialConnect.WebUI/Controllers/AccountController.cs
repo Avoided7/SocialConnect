@@ -2,7 +2,6 @@
 using SocialConnect.Entity.Dtos;
 using SocialConnect.Domain.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace SocialConnect.WebUI.Controllers
 {
@@ -110,10 +109,20 @@ namespace SocialConnect.WebUI.Controllers
 
         #endregion
 
-        public async Task<IActionResult> Delete()
+        #region Confirmation
+
+        [HttpGet]
+        public async Task<IActionResult> Confirmation(string userid, string token)
         {
-            ResponseDto<DateTime> response = await _accountService.DeleteAsync(User.Claims.First(claim => claim.Type == ClaimTypes.NameIdentifier).Value);
-            return RedirectToAction("Index", "Home");
+            token = token.Replace(' ', '+');
+            ResponseDto<UserDto> response = await _accountService.ConfirmAsync(userid, token);
+            if (!response.IsSucceeded)
+            {
+                return BadRequest();
+            }
+            return RedirectToAction(nameof(Login));
         }
+
+        #endregion
     }
 }

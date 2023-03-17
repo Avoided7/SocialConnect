@@ -9,6 +9,7 @@ namespace SocialConnect.Domain.Services.Interfaces
         Task<ResponseDto<UserDto>> FindByIdAsync(string id);
         Task<ResponseDto<UserDto>> FindByUsernameAsync(string username);
         Task<ResponseDto<DateTime>> DeleteAsync(string id);
+        Task<ResponseDto<UserDto>> ConfirmAsync(string userId, string token);
         Task<ResponseDto<DateTime>> LogoutAsync();
     }
 }

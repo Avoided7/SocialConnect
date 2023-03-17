@@ -1,5 +1,6 @@
 ﻿@{
     bool IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    string? username = IsAuthenticated ? User.Identity?.Name : null ?? "Undefined";
 }
 
 <!DOCTYPE html>
@@ -31,6 +32,7 @@
                         @if(IsAuthenticated)
                         {
                             <a class="btn btn-outline-danger" asp-controller="Account" asp-action="Logout" style="float:right;">Sign Out</a>
+                            <a class="btn btn-primary" asp-controller="Account" asp-action="Profile" asp-route-username="@username" style="float:right; margin-right: 5px;">@username</a>
                         }
                         else
                         {
