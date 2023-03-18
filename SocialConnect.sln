@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialConnect.Infrastructure", "SocialConnect.Infrastructure\SocialConnect.Infrastructure.csproj", "{AAFD1962-7A8A-46E9-B4C4-2A27323C0DAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialConnect.Infrastructure", "SocialConnect.Infrastructure\SocialConnect.Infrastructure.csproj", "{AAFD1962-7A8A-46E9-B4C4-2A27323C0DAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialConnect.Domain", "SocialConnect.Domain\SocialConnect.Domain.csproj", "{21E70CFA-3771-45DC-BF19-226239F73AF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialConnect.Domain", "SocialConnect.Domain\SocialConnect.Domain.csproj", "{21E70CFA-3771-45DC-BF19-226239F73AF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialConnect.Shared", "SocialConnect.Shared\SocialConnect.Shared.csproj", "{C3CD9B42-0B2E-4457-AED3-5D9E225E847B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialConnect.Shared", "SocialConnect.Shared\SocialConnect.Shared.csproj", "{C3CD9B42-0B2E-4457-AED3-5D9E225E847B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialConnect.WebUI", "SocialConnect.WebUI\SocialConnect.WebUI.csproj", "{5738A902-1E47-4F05-9F34-E892C705120A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialConnect.WebUI", "SocialConnect.WebUI\SocialConnect.WebUI.csproj", "{5738A902-1E47-4F05-9F34-E892C705120A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

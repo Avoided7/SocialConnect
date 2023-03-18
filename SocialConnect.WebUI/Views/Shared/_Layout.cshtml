@@ -1,9 +1,14 @@
-﻿<!DOCTYPE html>
+﻿@{
+    bool IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    string? username = IsAuthenticated ? User.Identity?.Name : null ?? "Undefined";
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SocialConnect.WebUI</title>
+    <title>SocialConnect - @ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SocialConnect.WebUI.styles.css" asp-append-version="true" />
@@ -23,6 +28,17 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                     </ul>
+                    <div style="float:right;">
+                        @if(IsAuthenticated)
+                        {
+                            <a class="btn btn-outline-danger" asp-controller="Account" asp-action="Logout" style="float:right;">Sign Out</a>
+                            <a class="btn btn-primary" asp-controller="Account" asp-action="Profile" asp-route-username="@username" style="float:right; margin-right: 5px;">@username</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Login" style="float:right;">Sign In</a>
+                        }
+                    </div>
                 </div>
             </div>
         </nav>

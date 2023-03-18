@@ -11,4 +11,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SocialConnect.Domain\SocialConnect.Domain.csproj" />
+    <ProjectReference Include="..\SocialConnect.Shared\SocialConnect.Shared.csproj" />
+  </ItemGroup>
 </Project>

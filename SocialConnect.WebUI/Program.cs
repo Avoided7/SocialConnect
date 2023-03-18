@@ -1,6 +1,9 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Infrastructure.Data;
+using SocialConnect.Domain.Services;
+using SocialConnect.Domain.Interfaces;
+using SocialConnect.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +15,7 @@ string connectionString = builder.Configuration.GetConnectionString("SocialDbCon
 builder.Services.AddDbContext<SocialDbContext>(context => context.UseSqlServer(connectionString));
 
 // Identity
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+builder.Services.AddDefaultIdentity<User>(options =>
                 {
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequiredLength = 8;
@@ -22,12 +25,21 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
                     options.Password.RequireLowercase = false;
 
                     options.User.RequireUniqueEmail = true;
+
+                    options.SignIn.RequireConfirmedEmail = true;
                 })
                 .AddEntityFrameworkStores<SocialDbContext>();
 
 // Authentication & Authorization
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
+
+// Services
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IEmailService, EmailRepository>();
+
+// Automapper
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 var app = builder.Build();
 
@@ -41,6 +53,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}");
 
 app.Run();
