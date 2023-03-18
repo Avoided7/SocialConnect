@@ -4,7 +4,6 @@ using SocialConnect.Infrastructure.Data;
 using SocialConnect.Domain.Services;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Domain.Entities;
-using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +35,7 @@ builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
 // Services
-builder.Services.AddScoped<IAccountService, AccountRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEmailService, EmailRepository>();
 
 // Automapper

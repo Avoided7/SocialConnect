@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SocialConnect.Domain.Enums;
+using SocialConnect.Shared;
 
 namespace SocialConnect.Domain.Entities
 {
-    public class User : IdentityUser
+    public class User : IdentityUser, IEntity
     {
         public string Lastname { get; set; } = string.Empty;
         public string Firstname { get; set; } = string.Empty;

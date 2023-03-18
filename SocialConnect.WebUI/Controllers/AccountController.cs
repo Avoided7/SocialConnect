@@ -9,13 +9,13 @@ namespace SocialConnect.WebUI.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IAccountService _accountService;
+        private readonly IUserRepository _accountRepository;
         private readonly IMapper _mapper;
 
-        public AccountController(IAccountService accountService,
+        public AccountController(IUserRepository accountRepository,
                                  IMapper mapper)
         {
-            this._accountService = accountService;
+            this._accountRepository = accountRepository;
             this._mapper = mapper;
         }
 
@@ -33,7 +33,7 @@ namespace SocialConnect.WebUI.Controllers
             {
                 return View(loginVM);
             }
-            bool isSignedIn = await _accountService.LoginAsync(loginVM.Username, loginVM.Password);
+            bool isSignedIn = await _accountRepository.LoginAsync(loginVM.Username, loginVM.Password);
 
             if(!isSignedIn)
             {
@@ -60,7 +60,7 @@ namespace SocialConnect.WebUI.Controllers
                 return View(registerVM);
             }
             User user = _mapper.Map<User>(registerVM);
-            bool isRegistered = await _accountService.RegisterAsync(user, registerVM.Password);
+            bool isRegistered = await _accountRepository.RegisterAsync(user, registerVM.Password);
 
             if (!isRegistered)
             {
@@ -78,7 +78,7 @@ namespace SocialConnect.WebUI.Controllers
         [HttpGet("{action}/{username}")]
         public async Task<IActionResult> Profile(string username)
         {
-            User? user = await _accountService.FindByUsernameAsync(username);
+            User? user = await _accountRepository.FindByUsernameAsync(username);
 
             if(user == null)
             {
@@ -95,7 +95,7 @@ namespace SocialConnect.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            bool isSignedOut = await _accountService.LogoutAsync();
+            bool isSignedOut = await _accountRepository.LogoutAsync();
 
             return RedirectToAction("Index", "Home");
         }
@@ -108,7 +108,7 @@ namespace SocialConnect.WebUI.Controllers
         public async Task<IActionResult> Confirmation(string userid, string token)
         {
             token = token.Replace(' ', '+');
-            bool isConfirmed = await _accountService.ConfirmAsync(userid, token);
+            bool isConfirmed = await _accountRepository.ConfirmAsync(userid, token);
             if (!isConfirmed)
             {
                 return BadRequest();

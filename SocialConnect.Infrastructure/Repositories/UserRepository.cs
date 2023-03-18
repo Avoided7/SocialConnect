@@ -3,17 +3,18 @@ using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Shared.Models;
 using SocialConnect.Infrastructure.Interfaces;
-
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialConnect.Domain.Services
 {
-    public class AccountRepository : IAccountService
+    public class UserRepository : IUserRepository
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailService _emailService;
 
-        public AccountRepository(UserManager<User> userManager,
+        public UserRepository(UserManager<User> userManager,
                               SignInManager<User> signInManager,
                               IEmailService emailService)
         { 
@@ -92,6 +93,64 @@ namespace SocialConnect.Domain.Services
             {
                 return false;
             }
+        }
+
+        public async Task<IEnumerable<User>> GetAsync()
+        {
+            return await _userManager.Users.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetAsync(Expression<Func<User, bool>> expression)
+        {
+            return await _userManager.Users.Where(expression).ToListAsync();
+        }
+
+        public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> expression)
+        {
+            return await _userManager.Users.FirstOrDefaultAsync(expression);
+        }
+
+        public async Task<User?> CreateAsync(User entity)
+        {
+            IdentityResult createResult = await _userManager.CreateAsync(entity);
+
+            if(!createResult.Succeeded)
+            {
+                return null;
+            }
+
+            return await _userManager.FindByEmailAsync(entity.Email);
+        }
+
+        public async Task<User?> UpdateAsync(string id, User entity)
+        {
+            User? user = await _userManager.FindByIdAsync(id);
+
+            if(user == null)
+            {
+                return null;
+            }
+
+            user.Firstname = entity.Firstname;
+            user.Lastname = entity.Lastname;
+            user.UserName = entity.UserName;
+            user.Email = entity.Email;
+            user.DateOfBirth = entity.DateOfBirth;
+            user.Gender = entity.Gender;
+
+            IdentityResult updateResult = await _userManager.UpdateAsync(user);
+
+            if(!updateResult.Succeeded)
+            {
+                return null;
+            }
+
+            return user;
+        }
+
+        public async Task<bool> DeleteAsync(User entity)
+        {
+            return await DeleteAsync(entity.Id);
         }
     }
 }
