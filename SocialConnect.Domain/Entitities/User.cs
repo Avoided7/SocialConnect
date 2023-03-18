@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SocialConnect.Entity.Enums;
+using SocialConnect.Domain.Enums;
 
-namespace SocialConnect.Entity.Models
+namespace SocialConnect.Domain.Entities
 {
     public class User : IdentityUser
     {

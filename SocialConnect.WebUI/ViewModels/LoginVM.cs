@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SocialConnect.Entity.Dtos
+namespace SocialConnect.WebUI.ViewModels
 {
-    public class LoginUserDto
+    public class LoginVM
     {
-        [Required, MinLength(4)]
+        [Required, MinLength(4), DataType(DataType.Text)]
         public string Username { get; set; } = string.Empty;
-        [Required, DataType(DataType.Password), MinLength(8)]
+        [Required, MinLength(8), DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
     }
 }

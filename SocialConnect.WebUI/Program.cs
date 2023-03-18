@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using SocialConnect.Entity.Models;
-using SocialConnect.Domain.Services;
-using SocialConnect.Domain.Services.Interfaces;
+using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Infrastructure.Data;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
+using SocialConnect.Domain.Services;
+using SocialConnect.Domain.Interfaces;
+using SocialConnect.Domain.Entities;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,8 +36,11 @@ builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
 // Services
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAccountService, AccountRepository>();
+builder.Services.AddScoped<IEmailService, EmailRepository>();
+
+// Automapper
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 var app = builder.Build();
 

@@ -14,8 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SocialConnect.Entity\SocialConnect.Entity.csproj" />
-    <ProjectReference Include="..\SocialConnect.Infrastructure\SocialConnect.Infrastructure.csproj" />
     <ProjectReference Include="..\SocialConnect.Shared\SocialConnect.Shared.csproj" />
   </ItemGroup>
 

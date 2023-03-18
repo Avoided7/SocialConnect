@@ -7,13 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ViewModels\**" />
-    <Content Remove="ViewModels\**" />
-    <EmbeddedResource Remove="ViewModels\**" />
-    <None Remove="ViewModels\**" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -28,9 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SocialConnect.Domain\SocialConnect.Domain.csproj" />
-    <ProjectReference Include="..\SocialConnect.Entity\SocialConnect.Entity.csproj" />
     <ProjectReference Include="..\SocialConnect.Infrastructure\SocialConnect.Infrastructure.csproj" />
-    <ProjectReference Include="..\SocialConnect.Shared\SocialConnect.Shared.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,17 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SocialConnect.Entity.Dtos;
-using SocialConnect.Domain.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using SocialConnect.Domain.Interfaces;
+using SocialConnect.WebUI.ViewModels;
+using AutoMapper;
+using SocialConnect.Domain.Entities;
 
 namespace SocialConnect.WebUI.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IAccountService _accountService;
+        private readonly IMapper _mapper;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService,
+                                 IMapper mapper)
         {
             this._accountService = accountService;
+            this._mapper = mapper;
         }
 
         #region Login
@@ -22,24 +27,20 @@ namespace SocialConnect.WebUI.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Login(LoginUserDto loginDto)
+        public async Task<IActionResult> Login(LoginVM loginVM)
         {
             if(!ModelState.IsValid)
             {
-                return View(loginDto);
+                return View(loginVM);
             }
-            ResponseDto<UserDto> response = await _accountService.LoginAsync(loginDto);
+            bool isSignedIn = await _accountService.LoginAsync(loginVM.Username, loginVM.Password);
 
-            if(!response.IsSucceeded)
+            if(!isSignedIn)
             {
-                foreach(string error in response.Errors!)
-                {
-                    ModelState.AddModelError("", error);
-                }
-                return View(loginDto);
+                return View(loginVM);
             }
 
-            return RedirectToAction(nameof(Profile), new { loginDto.Username });
+            return RedirectToAction(nameof(Profile), new { loginVM.Username });
         }
 
         #endregion
@@ -52,25 +53,21 @@ namespace SocialConnect.WebUI.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterUserDto registerDto)
+        public async Task<IActionResult> Register(RegisterVM registerVM)
         {
             if(!ModelState.IsValid)
             {
-                return View(registerDto);
+                return View(registerVM);
             }
+            User user = _mapper.Map<User>(registerVM);
+            bool isRegistered = await _accountService.RegisterAsync(user, registerVM.Password);
 
-            ResponseDto<UserDto> response = await _accountService.RegisterAsync(registerDto);
-
-            if (!response.IsSucceeded)
+            if (!isRegistered)
             {
-                foreach(string error in response.Errors!)
-                {
-                    ModelState.AddModelError("", error);
-                }
-                return View(registerDto);
+                return View(registerVM);
             }
 
-            return RedirectToAction(nameof(Profile), new { registerDto.Username });
+            return RedirectToAction(nameof(Login));
         }
 
 
@@ -81,18 +78,14 @@ namespace SocialConnect.WebUI.Controllers
         [HttpGet("{action}/{username}")]
         public async Task<IActionResult> Profile(string username)
         {
-            ResponseDto<UserDto> response = await _accountService.FindByUsernameAsync(username);
+            User? user = await _accountService.FindByUsernameAsync(username);
 
-            if(!response.IsSucceeded)
+            if(user == null)
             {
-                foreach(string error in response.Errors!)
-                {
-                    ModelState.AddModelError("", error);
-                }
                 return View();
             }
 
-            return View(response.Content);
+            return View(user);
         }
 
         #endregion
@@ -102,7 +95,7 @@ namespace SocialConnect.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            ResponseDto<DateTime> response = await _accountService.LogoutAsync();
+            bool isSignedOut = await _accountService.LogoutAsync();
 
             return RedirectToAction("Index", "Home");
         }
@@ -115,8 +108,8 @@ namespace SocialConnect.WebUI.Controllers
         public async Task<IActionResult> Confirmation(string userid, string token)
         {
             token = token.Replace(' ', '+');
-            ResponseDto<UserDto> response = await _accountService.ConfirmAsync(userid, token);
-            if (!response.IsSucceeded)
+            bool isConfirmed = await _accountService.ConfirmAsync(userid, token);
+            if (!isConfirmed)
             {
                 return BadRequest();
             }

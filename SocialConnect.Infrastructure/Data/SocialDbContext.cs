@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SocialConnect.Entity.Models;
+using SocialConnect.Domain.Entities;
 
 namespace SocialConnect.Infrastructure.Data
 {

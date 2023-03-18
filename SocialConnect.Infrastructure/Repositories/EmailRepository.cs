@@ -1,24 +1,24 @@
 ﻿using MailKit.Security;
+using MimeKit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MimeKit;
-using SocialConnect.Domain.Services.Interfaces;
-using SocialConnect.Entity.Dtos;
+using SocialConnect.Infrastructure.Interfaces;
+using SocialConnect.Shared.Models;
 
 namespace SocialConnect.Domain.Services
 {
-    public class EmailService : IEmailService
+    public class EmailRepository : IEmailService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<EmailService> _logger;
+        private readonly ILogger<EmailRepository> _logger;
 
-        public EmailService(IConfiguration configuration,
-                            ILogger<EmailService> logger)
+        public EmailRepository(IConfiguration configuration,
+                            ILogger<EmailRepository> logger)
         {
             this._configuration = configuration;
             this._logger = logger;
         }
-        public async Task<bool> SendAsync(EmailDto emailDto)
+        public async Task<bool> SendAsync(EmailMessage emailDto)
         {
             try
             {         

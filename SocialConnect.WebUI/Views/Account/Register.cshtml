@@ -1,4 +1,4 @@
-﻿@model RegisterUserDto
+﻿@model RegisterVM
 
 @{
     ViewData["Title"] = "Create your best profile =)";
@@ -39,8 +39,8 @@
 
             <input class="form-control mb-3" asp-for="Password" placeholder="Password" />
             <span class="text-danger" asp-validation-for="Password"></span>
-            <input class="form-control mb-3" asp-for="PasswordConfirm" placeholder="Confirm password" />
-            <span class="text-danger" asp-validation-for="PasswordConfirm"></span>
+            <input class="form-control mb-3" asp-for="ConfirmPassword" placeholder="Confirm password" />
+            <span class="text-danger" asp-validation-for="ConfirmPassword"></span>
             <hr/>
             <div class="row" style="margin: 5px;">
                 <button class="btn btn-success"><b>Registration</b></button>
