@@ -10,26 +10,34 @@
 }
 else
 {
+    <div class="col-md-3">
     @foreach(UserVM user in Model)
     {
-        <div class="card">
+        <div class="card border-success">
             <div class="card-body">
-                <a asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
-                <span class="badge rounded-pill bg-primary">@user.Status.ToString()</span>
-                @if (user.Status == FriendStatus.WaitedResponse)
-                {
-                    <div class="card-text" style="float:right;">
-                        <a class="btn btn-success" asp-controller="Friends" asp-action="Accept" asp-route-friendid="@user.Id">Accept</a>
-                        <a class="btn btn-outline-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id">Decline</a>
-                    </div>
-                }
-                @if (user.Status == FriendStatus.Friend)
-                {
-                    <div class="card-text" style="float:right;">
-                        <a class="btn btn-outline-danger" asp-controller="Friends" asp-action="Delete" asp-route-friendid="@user.Id">Delete</a>
-                    </div>
-                }
+                <a class="alert-link" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
+                <a class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status.ToString()</a>
+                <div class="dropdown-menu" style="">
+                    <a class="dropdown-item text-primary" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
+                    @if (user.Status == FriendStatus.WaitedResponse)
+                    {
+                        <a class="dropdown-item text-success" asp-controller="Friends" asp-action="Accept" asp-route-friendid="@user.Id"><b>Accept</b></a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id"><b>Decline</b></a>
+                    }
+                    @if (user.Status == FriendStatus.SendedRequest)
+                    {
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id"><b>Decline</b></a>
+                    }
+                    @if (user.Status == FriendStatus.Friend)
+                    {
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Delete" asp-route-friendid="@user.Id"><b>Delete</b></a>
+                    }
+                </div>
             </div>
         </div>
     }
+    </div>
 }
