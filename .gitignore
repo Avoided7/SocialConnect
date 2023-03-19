@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /SocialConnect.Infrastructure/Migrations
+/SocialConnect.Infrastructure/Migrations/SocialDbContextModelSnapshot.cs
+/SocialConnect.Infrastructure/Migrations/SocialDbContextModelSnapshot.cs
