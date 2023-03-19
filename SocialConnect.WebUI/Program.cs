@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Infrastructure.Data;
-using SocialConnect.Domain.Services;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using SocialConnect.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,14 +29,22 @@ builder.Services.AddDefaultIdentity<User>(options =>
 
                     options.SignIn.RequireConfirmedEmail = true;
                 })
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<SocialDbContext>();
 
 // Authentication & Authorization
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+});
+
 // Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IEmailService, EmailRepository>();
 
 // Automapper
@@ -54,5 +63,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}");
+
+SeedDB.SeedRoles(app);
 
 app.Run();

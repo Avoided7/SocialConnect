@@ -9,6 +9,7 @@ namespace SocialConnect.WebUI.Mapper
         public AutoMapperProfile()
         {
             CreateMap<RegisterVM, User>();
+            CreateMap<User, UserVM>();
         }
     }
 }

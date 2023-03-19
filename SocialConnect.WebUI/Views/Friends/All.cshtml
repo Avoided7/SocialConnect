@@ -1,0 +1,35 @@
+﻿@model IEnumerable<UserVM>
+
+@{
+    ViewData["Title"] = "Friends";
+}
+
+@if(!Model.Any())
+{
+    <h3>Nobody here...</h3>
+}
+else
+{
+    @foreach(UserVM user in Model)
+    {
+        <div class="card">
+            <div class="card-body">
+                <a asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
+                <span class="badge rounded-pill bg-primary">@user.Status.ToString()</span>
+                @if (user.Status == FriendStatus.WaitedResponse)
+                {
+                    <div class="card-text" style="float:right;">
+                        <a class="btn btn-success" asp-controller="Friends" asp-action="Accept" asp-route-friendid="@user.Id">Accept</a>
+                        <a class="btn btn-outline-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id">Decline</a>
+                    </div>
+                }
+                @if (user.Status == FriendStatus.Friend)
+                {
+                    <div class="card-text" style="float:right;">
+                        <a class="btn btn-outline-danger" asp-controller="Friends" asp-action="Delete" asp-route-friendid="@user.Id">Delete</a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}

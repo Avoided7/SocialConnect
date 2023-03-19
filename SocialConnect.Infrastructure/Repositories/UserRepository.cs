@@ -5,8 +5,9 @@ using SocialConnect.Shared.Models;
 using SocialConnect.Infrastructure.Interfaces;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using SocialConnect.Domain.Entitities.Constants;
 
-namespace SocialConnect.Domain.Services
+namespace SocialConnect.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
@@ -73,10 +74,15 @@ namespace SocialConnect.Domain.Services
         public async Task<bool> ConfirmAsync(string userId, string token)
         {
             User? user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null) { return false; }
 
             IdentityResult confirmResult = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (confirmResult.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, UserConstant.USER);
+            }
 
             return confirmResult.Succeeded;
 
@@ -97,7 +103,9 @@ namespace SocialConnect.Domain.Services
 
         public async Task<IEnumerable<User>> GetAsync()
         {
-            return await _userManager.Users.AsNoTracking().ToListAsync();
+            return await _userManager.Users.AsNoTracking()
+                                           .Include(user => user.Friends)
+                                           .ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetAsync(Expression<Func<User, bool>> expression)
