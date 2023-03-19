@@ -1,0 +1,36 @@
+﻿@model IEnumerable<UserVM>
+
+@{
+    ViewData["Title"] = "Users";
+    string? username = User.Identity?.Name;
+}
+
+@foreach (UserVM user in Model)
+{
+    <div class="card">
+        <div class="card-body">
+            <h3>@user.Lastname @user.Firstname</h3>
+            <hr />
+            @if (user.Status == FriendStatus.Friend)
+            {
+                <a asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">Your best friend!</a>
+            }
+            else if(user.Status == FriendStatus.WaitedResponse)
+            {
+                <p>Your follower!</p>
+                <a class="btn btn-success" asp-controller="Friends" asp-action="Accept" asp-route-friendId="@user.Id">Accept</a>
+                <a class="btn btn-outline-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendId="@user.Id">Decline</a>
+            }
+            else if (user.Status == FriendStatus.SendedRequest)
+            {
+                <text>Sended request!</text>
+                <a class="btn btn-outline-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendId="@user.Id">Decline</a>
+            }
+            else
+            {
+                <a class="btn btn-primary" asp-controller="Friends" asp-action="Add" asp-route-friendid="@user.Id">Send request!</a>
+            }
+        </div>
+    </div>
+
+}

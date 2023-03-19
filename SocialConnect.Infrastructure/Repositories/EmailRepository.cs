@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Shared.Models;
 
-namespace SocialConnect.Domain.Services
+namespace SocialConnect.Infrastructure.Repositories
 {
     public class EmailRepository : IEmailService
     {
