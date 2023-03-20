@@ -1,4 +1,5 @@
 ﻿using SocialConnect.Domain.Entities;
+using SocialConnect.Domain.Enums;
 using SocialConnect.Shared;
 
 namespace SocialConnect.Domain.Interfaces
@@ -6,7 +7,8 @@ namespace SocialConnect.Domain.Interfaces
     public interface IGroupRepository : IRepository<Group>
     {
         Task<bool> JoinUserAsync(string groupId, string userId);
+        Task<bool> KickUserAsync(string currentUserId, string userId, string groupId);
         Task<bool> LeftUserAsync(string groupId, string userId);
-        Task<bool> PromoteUserAsync(GroupUser groupUser);
+        Task<bool> PromoteUserAsync(string currentUserId, string userId, string groupId, GroupUserStatus newStatus);
     }
 }

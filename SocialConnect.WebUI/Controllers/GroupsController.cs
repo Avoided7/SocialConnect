@@ -149,5 +149,43 @@ namespace SocialConnect.WebUI.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Kick(string userId, string groupId)
+        {
+            string? currentUserId = User.GetUserId();
+            if (currentUserId == null)
+            {
+                // TODO: Replace 'Bad Request' with error page/message.
+                return BadRequest();
+            }
+            bool isKicked = await _groupRepository.KickUserAsync(currentUserId, userId, groupId);
+            if(!isKicked)
+            {
+                // TODO: Replace 'Bad Request' with error page/message.
+                return BadRequest();
+            }
+
+            return Redirect(Request.Headers["Referer"]);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Promote(string userId, string groupId, string status)
+        {
+            string? currentUserId = User.GetUserId();
+            if (currentUserId == null)
+            {
+                // TODO: Replace 'Bad Request' with error message.
+                return BadRequest();
+            }
+            if(!Enum.TryParse(status, true, out GroupUserStatus userStatus))
+            {
+                // TODO: Replace 'Bad Request' with error message.
+                return BadRequest();
+            }
+            bool isPromoted = await _groupRepository.PromoteUserAsync(currentUserId, userId, groupId, userStatus);
+
+            return isPromoted ? Ok() : BadRequest();
+        }
     }
 }

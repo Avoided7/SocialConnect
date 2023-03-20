@@ -211,32 +211,76 @@ namespace SocialConnect.Infrastructure.Repositories
             }
         }
 
-        public async Task<bool> PromoteUserAsync(GroupUser promoteUser)
+        public async Task<bool> PromoteUserAsync(string currentUserId, string userId, string groupId, GroupUserStatus newStatus)
         {
             try
             {
-                if(promoteUser.UserStatus == GroupUserStatus.Founder)
+                if(newStatus == GroupUserStatus.Founder)
                 {
                     return false;
                 }
-                Group? group = await FirstOrDefaultAsync(group => group.Id == promoteUser.GroupId);
+                Group? group = await FirstOrDefaultAsync(group => group.Id == groupId);
                 if (group == null)
                 {
                     return false;
                 }
-                GroupUser? existedGroupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser => groupUser.GroupId == promoteUser.GroupId &&
-                                                                                                           groupUser.UserId == promoteUser.UserId);
-                if (existedGroupUser == null)
+
+                GroupUser? promotedUser = group.Users.FirstOrDefault(groupUser => groupUser.UserId == userId);
+                if (promotedUser == null || promotedUser.UserStatus == GroupUserStatus.Founder)
                 {
                     return false;
                 }
 
-                if(existedGroupUser.UserStatus == GroupUserStatus.Founder)
+                GroupUser? founder = group.Users.FirstOrDefault(groupUser => groupUser.UserId == currentUserId);
+
+                if (founder == null || founder.UserStatus != GroupUserStatus.Founder)
                 {
                     return false;
                 }
-                existedGroupUser.UserStatus = promoteUser.UserStatus;
-                _dbContext.GroupUsers.Update(existedGroupUser);
+
+                promotedUser.UserStatus = newStatus;
+                _dbContext.GroupUsers.Update(promotedUser);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> KickUserAsync(string currentUserId, string userId, string groupId)
+        {
+            try
+            {
+                Group? group = await _dbContext.Groups.Include(group => group.Users)
+                                                      .FirstOrDefaultAsync(group => group.Id == groupId);
+
+                if (group == null)
+                {
+                    return false;
+                }
+
+                GroupUser? currentUser = group.Users.FirstOrDefault(groupUser => groupUser.UserId == currentUserId);
+
+                if (currentUser == null || currentUser.UserStatus == GroupUserStatus.User)
+                {
+                    return false;
+                }
+
+                GroupUser? kickedUser = group.Users.FirstOrDefault(groupUser => groupUser.UserId == userId);
+
+                if (kickedUser == null || kickedUser.UserStatus == GroupUserStatus.Founder)
+                {
+                    return false;
+                }
+                if (kickedUser.UserStatus == GroupUserStatus.Admin && currentUser.UserStatus != GroupUserStatus.Founder)
+                {
+                    return false;
+                }
+
+                _dbContext.GroupUsers.Remove(kickedUser);
                 await _dbContext.SaveChangesAsync();
                 return true;
             }
