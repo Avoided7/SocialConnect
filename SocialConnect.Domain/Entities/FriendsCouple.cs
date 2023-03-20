@@ -1,7 +1,6 @@
-﻿using SocialConnect.Domain.Entities;
-using SocialConnect.Shared;
+﻿using SocialConnect.Shared;
 
-namespace SocialConnect.Domain.Entitities
+namespace SocialConnect.Domain.Entities
 {
     public class FriendsCouple : IEntity
     {

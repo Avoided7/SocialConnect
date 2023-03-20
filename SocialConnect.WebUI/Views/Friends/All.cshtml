@@ -16,7 +16,7 @@ else
         <div class="card border-success">
             <div class="card-body">
                 <a class="alert-link" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
-                <a class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status.ToString()</a>
+                <a class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
                 <div class="dropdown-menu" style="">
                     <a class="dropdown-item text-primary" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
                     @if (user.Status == FriendStatus.WaitedResponse)

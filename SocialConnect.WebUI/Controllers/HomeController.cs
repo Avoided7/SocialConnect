@@ -2,12 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialConnect.Domain.Entities;
-using SocialConnect.Domain.Entitities;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.WebUI.Extenstions;
-using SocialConnect.WebUI.ViewModels;
-using SocialConnect.WebUI.ViewModels.Enums;
-using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace SocialConnect.WebUI.Controllers
@@ -18,16 +14,19 @@ namespace SocialConnect.WebUI.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IUserRepository _userRepository;
         private readonly IFriendRepository _friendRepository;
+        private readonly IGroupRepository _groupRepository;
         private readonly IMapper _mapper;
 
         public HomeController(ILogger<HomeController> logger,
                               IUserRepository userRepository,
                               IFriendRepository friendRepository,
+                              IGroupRepository groupRepository,
                               IMapper mapper)
         {
             this._logger = logger;
             this._userRepository = userRepository;
             this._friendRepository = friendRepository;
+            this._groupRepository = groupRepository;
             this._mapper = mapper;
         }
 
@@ -35,7 +34,6 @@ namespace SocialConnect.WebUI.Controllers
         {
             return View();
         }
-
         public async Task<IActionResult> Users()
         {
             string? userId = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -51,6 +49,12 @@ namespace SocialConnect.WebUI.Controllers
             
 
             return View(friends.GetFriendsStatus(friendsCouples));
+        }
+        public async Task<IActionResult> Groups()
+        {
+            IEnumerable<Group> groups = await _groupRepository.GetAsync();
+
+            return View(groups);
         }
 
     }

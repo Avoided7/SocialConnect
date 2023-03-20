@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using SocialConnect.Domain.Entities;
-using SocialConnect.Domain.Entitities;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Infrastructure.Data;
 using System.Linq.Expressions;
@@ -179,7 +178,7 @@ namespace SocialConnect.Infrastructure.Repositories
                 return false;
             }
             friend.IsAgreed = true;
-            FriendsCouple friendsCouple = new FriendsCouple
+            FriendsCouple friendsCouple = new()
             {
                 UserId = friend.FriendId,
                 FriendId = friend.UserId,

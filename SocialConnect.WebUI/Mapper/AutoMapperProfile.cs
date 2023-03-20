@@ -10,6 +10,7 @@ namespace SocialConnect.WebUI.Mapper
         {
             CreateMap<RegisterVM, User>();
             CreateMap<User, UserVM>();
+            CreateMap<GroupVM, Group>();
         }
     }
 }

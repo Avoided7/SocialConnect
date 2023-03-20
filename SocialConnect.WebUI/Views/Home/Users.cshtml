@@ -13,7 +13,7 @@
             <hr />
             @if (user.Status == FriendStatus.Friend)
             {
-                <a asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">Your best friend!</a>
+                <a class="btn btn-primary" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">Your best friend!</a>
             }
             else if(user.Status == FriendStatus.WaitedResponse)
             {

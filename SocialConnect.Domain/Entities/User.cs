@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SocialConnect.Domain.Entitities;
 using SocialConnect.Domain.Enums;
 using SocialConnect.Shared;
 
@@ -14,5 +13,6 @@ namespace SocialConnect.Domain.Entities
 
         // Relations
         public virtual IEnumerable<FriendsCouple> Friends { get; set; } = null!;
+        public virtual IEnumerable<GroupUser> Groups { get; set; } = null!;
     }
 }
