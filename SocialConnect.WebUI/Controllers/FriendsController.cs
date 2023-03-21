@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialConnect.Domain.Entities;
-using SocialConnect.Domain.Entitities;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.WebUI.Extenstions;
 using SocialConnect.WebUI.ViewModels;

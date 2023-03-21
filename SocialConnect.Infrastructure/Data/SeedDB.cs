@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using SocialConnect.Domain.Entitities.Constants;
+using SocialConnect.Domain.Entities.Constants;
 
 namespace SocialConnect.Infrastructure.Data
 {

@@ -1,0 +1,84 @@
+﻿@model Group
+
+@{
+    ViewData["Title"] = Model.Name;
+    string userId = User.GetUserId() ?? "";
+    string currentUserName = User.Identity?.Name ?? "";
+    GroupUser? user = Model.Users.FirstOrDefault(user => user.UserId == userId);
+    GroupUserStatus status = user?.UserStatus ?? GroupUserStatus.User;
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h3>@Model.Name</h3>
+        <hr />
+        <p>@Model.Description</p>
+        <hr />
+        @if (user == null)
+        {
+            <div class="row" style="margin: 5px;">
+                <a class="btn btn-success" asp-controller="Groups" asp-action="Join" asp-route-groupId="@Model.Id">Join</a>
+            </div>
+        }
+        else if (user.UserStatus == GroupUserStatus.Founder)
+        {
+            <div class="row" style="margin: 5px;">
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Delete" asp-route-groupId="@Model.Id">Delete</a>
+            </div>
+        }
+        else
+        {
+            <div class="row" style="margin: 5px;">
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Left" asp-route-groupId="@Model.Id">Left</a>
+            </div>
+        }
+    </div>
+</div>
+
+@foreach(GroupUser groupUser in Model.Users)
+{
+    string username = groupUser.User!.UserName;
+    <div class="card mb-2">
+        <div class="card-body">
+            <h4><a asp-controller="Account" asp-action="Profile" asp-route-username="@username">@username</a></h4>
+            <span class="badge rounded-pill bg-info">@groupUser.UserStatus</span>
+            @if (status == GroupUserStatus.Founder && username != currentUserName)
+            {
+                <hr />
+
+                <a class="dropdown-toggle btn btn-primary" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Promote</a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" onclick="promote('@(groupUser.UserId)', '@(groupUser.GroupId)', 'User')">User</a>
+                    <a class="dropdown-item" onclick="promote('@(groupUser.UserId)', '@(groupUser.GroupId)', 'Admin')">Admin</a>
+                </div>
+                
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
+            }
+            @if (status == GroupUserStatus.Admin && groupUser.UserStatus == GroupUserStatus.User)
+            {
+                <hr />
+
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
+            }
+        </div>
+    </div>
+}
+
+<script>
+    async function promote(userId, groupId, userStatus)
+    {
+        console.log("Test")
+        const response = await fetch("@(Url.ActionLink("Promote", "Groups"))" + "?userId=" + userId + "&groupId=" + groupId + "&status=" + userStatus,
+            {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+        if (response.ok === true) {
+            window.location.reload();
+        }
+        else {
+            const jsonResponse = await response.json();
+            alert("Error: " + jsonResponse.message);
+        }
+    }
+</script>

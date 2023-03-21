@@ -1,5 +1,4 @@
 ﻿using SocialConnect.Domain.Entities;
-using SocialConnect.Domain.Entitities;
 using SocialConnect.Shared;
 using System.Linq.Expressions;
 

@@ -5,7 +5,8 @@ using SocialConnect.Shared.Models;
 using SocialConnect.Infrastructure.Interfaces;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using SocialConnect.Domain.Entitities.Constants;
+using SocialConnect.Domain.Entities.Constants;
+using Microsoft.Extensions.Logging;
 
 namespace SocialConnect.Infrastructure.Repositories
 {
@@ -14,14 +15,17 @@ namespace SocialConnect.Infrastructure.Repositories
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailService _emailService;
+        private readonly ILogger<UserRepository> _logger;
 
         public UserRepository(UserManager<User> userManager,
                               SignInManager<User> signInManager,
-                              IEmailService emailService)
+                              IEmailService emailService,
+                              ILogger<UserRepository> logger)
         { 
             this._userManager = userManager;
             this._signInManager = signInManager;
             this._emailService = emailService;
+            this._logger = logger;
         }
 
         public async Task<User?> FindByIdAsync(string id)
@@ -97,6 +101,7 @@ namespace SocialConnect.Infrastructure.Repositories
             }
             catch(Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return false;
             }
         }
@@ -105,17 +110,28 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             return await _userManager.Users.AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.Groups)
+                                           .ThenInclude(groupUser => groupUser.Group)
                                            .ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetAsync(Expression<Func<User, bool>> expression)
         {
-            return await _userManager.Users.Where(expression).ToListAsync();
+            return await _userManager.Users.AsNoTracking()
+                                           .Include(user => user.Friends)
+                                           .Include(user => user.Groups)
+                                           .ThenInclude(groupUser => groupUser.Group)
+                                           .Where(expression)
+                                           .ToListAsync();
         }
 
         public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> expression)
         {
-            return await _userManager.Users.FirstOrDefaultAsync(expression);
+            return await _userManager.Users.AsNoTracking()
+                                           .Include(user => user.Friends)
+                                           .Include(user => user.Groups)
+                                           .ThenInclude(groupUser => groupUser.Group)
+                                           .FirstOrDefaultAsync(expression);
         }
 
         public async Task<User?> CreateAsync(User entity)

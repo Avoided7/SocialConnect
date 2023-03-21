@@ -1,4 +1,4 @@
-﻿namespace SocialConnect.Domain.Entitities.Constants
+﻿namespace SocialConnect.Domain.Entities.Constants
 {
     public class UserConstant
     {

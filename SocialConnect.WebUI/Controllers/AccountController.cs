@@ -75,9 +75,13 @@ namespace SocialConnect.WebUI.Controllers
 
         #region Profile
 
-        [HttpGet("{action}/{username}")]
-        public async Task<IActionResult> Profile(string username)
+        [HttpGet("{action}/{username?}")]
+        public async Task<IActionResult> Profile(string? username)
         {
+            if(username == null)
+            {
+                username = User.Identity?.Name ?? "";
+            }
             User? user = await _accountRepository.FindByUsernameAsync(username);
 
             if(user == null)

@@ -1,0 +1,26 @@
+﻿@model GroupVM
+
+@{
+    ViewData["Title"] = "Create group!";
+}
+
+<form method="post">
+    <div class="card col-md-4">
+        <div class="card-body">
+            <h3>Create group</h3>
+            <hr />
+            <div class="text-danger mb-3" asp-validation-summary="ModelOnly"></div>
+
+            <input class="form-control mb-3" asp-for="Name" placeholder="Name" />
+            <span class="text-danger" asp-validation-for="Name"></span>
+
+            <input class="form-control mb-3" asp-for="Description" placeholder="Description" />
+            <span class="text-danger" asp-validation-for="Name"></span>
+
+            <hr />
+            <div class="row" style="margin: 5px;">
+                <button class="btn btn-success">Create</button>
+            </div>
+        </div>
+    </div>
+</form>

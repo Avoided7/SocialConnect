@@ -1,0 +1,33 @@
+﻿@model IEnumerable<Group>
+
+@{
+    ViewData["Title"] = "Groups";
+    string userId = User.GetUserId() ?? "";
+}
+<a class="btn btn-primary" style="position: fixed; right: 25px; bottom: 25px; width: 100px;" asp-controller="Groups" asp-action="Create">Create</a>
+@foreach(Group group in Model)
+{
+    GroupUser? user = group.Users.FirstOrDefault(user => user.UserId == userId);
+    GroupUserStatus status = user?.UserStatus ?? GroupUserStatus.User;
+    <div class="card mb-3">
+        <div class="card-body">
+            <h3>
+                <a class="link-light" asp-controller="Groups" asp-action="Info" asp-route-groupName="@group.Name">@group.Name</a>
+                @if (status == GroupUserStatus.Founder)
+                {
+                    <abbr title="You are Founder"><i class="bi bi-star"></i></abbr>
+                }
+            </h3>
+            <p style="font-style: italic;">@group.UserCount users</p>
+            <hr />
+            @if (status == GroupUserStatus.Founder)
+            {
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Delete" asp-route-groupId="@group.Id">Delete</a>
+            }
+            else
+            {
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Left" asp-route-groupId="@group.Id">Left</a>
+            }
+        </div>
+    </div>
+}

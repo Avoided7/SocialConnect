@@ -1,12 +1,16 @@
 ﻿using SocialConnect.Domain.Entities;
-using SocialConnect.Domain.Entitities;
 using SocialConnect.WebUI.ViewModels;
 using SocialConnect.WebUI.ViewModels.Enums;
+using System.Security.Claims;
 
 namespace SocialConnect.WebUI.Extenstions
 {
     public static class UserExtenstion
     {
+        public static string? GetUserId(this ClaimsPrincipal user)
+        {
+            return user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
         public static IEnumerable<UserVM> GetFriendsStatus(this IEnumerable<User> users, IEnumerable<FriendsCouple> friends)
         {
             return users.Select(user =>
