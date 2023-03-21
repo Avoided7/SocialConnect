@@ -170,6 +170,57 @@ namespace SocialConnect.WebUI.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Accept(string userId, string groupId)
+        {
+            string? currentUserId = User.GetUserId();
+            if (currentUserId == null)
+            {
+                // TODO: Replace 'Bad Request' with error page/message.
+                return BadRequest();
+            }
+
+            bool isAccepted = await _groupRepository.AcceptUserAsync(currentUserId, userId, groupId);
+
+            if (!isAccepted)
+            {
+                // TODO: Replace 'Bad Request' with error page/message.
+                return BadRequest();
+            }
+
+            return Redirect(Request.Headers["Referer"]);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Decline(string groupId, string userId = "")
+        {
+            string? currentUserId = User.GetUserId();
+            if (currentUserId == null)
+            {
+                // TODO: Replace 'Bad Request' with error page/message.
+                return BadRequest();
+            }
+
+            bool isDeclined;
+            
+            if (!string.IsNullOrEmpty(userId))
+            {
+                isDeclined = await _groupRepository.DeclineRequestAsync(currentUserId, userId, groupId);
+            }
+            else
+            {
+                isDeclined = await _groupRepository.DeclineRequestAsync(currentUserId, groupId);
+            }
+            
+            if (!isDeclined)
+            {
+                // TODO: Replace 'Bad Request' with error page/message.
+                return BadRequest();
+            }
+
+            return Redirect(Request.Headers["Referer"]);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Promote(string userId, string groupId, string status)
         {
             string? currentUserId = User.GetUserId();
