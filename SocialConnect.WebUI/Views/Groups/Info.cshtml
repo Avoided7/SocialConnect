@@ -26,6 +26,13 @@
                 <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Delete" asp-route-groupId="@Model.Id">Delete</a>
             </div>
         }
+        else if (user.UserStatus == GroupUserStatus.User && !user.IsAgreed)
+        {
+            <a class="dropdown-toggle btn btn-primary" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Waited Response</a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item text-danger" asp-controller="Groups" asp-action="Decline" asp-route-groupId="@Model.Id">Decline</a>
+            </div>
+        }
         else
         {
             <div class="row" style="margin: 5px;">
@@ -35,14 +42,21 @@
     </div>
 </div>
 
-@foreach(GroupUser groupUser in Model.Users)
+@foreach(GroupUser groupUser in Model.Users.OrderByDescending(user => user.UserStatus))
 {
     string username = groupUser.User!.UserName;
     <div class="card mb-2">
         <div class="card-body">
             <h4><a asp-controller="Account" asp-action="Profile" asp-route-username="@username">@username</a></h4>
             <span class="badge rounded-pill bg-info">@groupUser.UserStatus</span>
-            @if (status == GroupUserStatus.Founder && username != currentUserName)
+            @if (status != GroupUserStatus.User && groupUser.UserStatus == GroupUserStatus.User && !groupUser.IsAgreed)
+             {
+                 <hr />
+ 
+                 <a class="btn btn-success" asp-controller="Groups" asp-action="Accept" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Accept</a>
+                 <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Decline" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Decline</a>
+             }
+            else if (status == GroupUserStatus.Founder && username != currentUserName)
             {
                 <hr />
 
@@ -54,12 +68,13 @@
                 
                 <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
             }
-            @if (status == GroupUserStatus.Admin && groupUser.UserStatus == GroupUserStatus.User)
+            else if (status == GroupUserStatus.Admin && groupUser.UserStatus == GroupUserStatus.User)
             {
                 <hr />
 
                 <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
             }
+            
         </div>
     </div>
 }

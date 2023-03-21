@@ -166,7 +166,7 @@ namespace SocialConnect.Infrastructure.Repositories
                 if(group.UserCount == 0)
                 {
                     existedGroupUser.UserStatus = GroupUserStatus.Founder;
-
+                    existedGroupUser.IsAgreed = true;
                 }
 
                 _dbContext.GroupUsers.Add(existedGroupUser);
@@ -195,7 +195,7 @@ namespace SocialConnect.Infrastructure.Repositories
                 }
                 GroupUser? existedGroupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser => groupUser.GroupId == groupId &&
                                                                                                            groupUser.UserId == userId);
-                if (existedGroupUser == null)
+                if (existedGroupUser == null || existedGroupUser.UserStatus == GroupUserStatus.Founder)
                 {
                     return false;
                 }
@@ -240,6 +240,102 @@ namespace SocialConnect.Infrastructure.Repositories
 
                 promotedUser.UserStatus = newStatus;
                 _dbContext.GroupUsers.Update(promotedUser);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> AcceptUserAsync(string currenUserId, string userId, string groupId)
+        {
+            try
+            {
+                Group? group = await _dbContext.Groups.Include(group => group.Users)
+                    .FirstOrDefaultAsync(group => group.Id == groupId);
+
+                if (group == null)
+                {
+                    return false;
+                }
+
+                GroupUser? currentUser = group.Users.FirstOrDefault(user => user.UserId == currenUserId);
+
+                if (currentUser == null || currentUser.UserStatus == GroupUserStatus.User)
+                {
+                    return false;
+                }
+
+                GroupUser? acceptedUser = group.Users.FirstOrDefault(user => user.UserId == userId);
+
+                if (acceptedUser == null || acceptedUser.IsAgreed)
+                {
+                    return false;
+                }
+
+                acceptedUser.IsAgreed = true;
+                _dbContext.GroupUsers.Update(acceptedUser);
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> DeclineRequestAsync(string userId, string groupId)
+        {
+            try
+            {
+                GroupUser? groupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser =>
+                    groupUser.UserId == userId && groupUser.GroupId == groupId);
+                if (groupUser == null)
+                {
+                    return false;
+                }
+
+                if (groupUser.IsAgreed)
+                {
+                    return false;
+                }
+
+                _dbContext.GroupUsers.Remove(groupUser);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> DeclineRequestAsync(string currentUserID, string userId, string groupId)
+        {
+            try
+            {
+                GroupUser? currentUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser =>
+                    groupUser.UserId == currentUserID && groupUser.GroupId == groupId);
+                if (currentUser == null || currentUser.UserStatus == GroupUserStatus.User)
+                {
+                    return false;
+                }
+
+                GroupUser? declinedUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser =>
+                    groupUser.UserId == userId && groupUser.GroupId == groupId);
+                
+                if (declinedUser == null || declinedUser.IsAgreed)
+                {
+                    return false;
+                }
+
+                _dbContext.GroupUsers.Remove(declinedUser);
                 await _dbContext.SaveChangesAsync();
                 return true;
             }
