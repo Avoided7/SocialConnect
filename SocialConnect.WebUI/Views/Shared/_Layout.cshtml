@@ -1,6 +1,7 @@
 ﻿@{
-    bool IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-    string? username = IsAuthenticated ? User.Identity?.Name : null ?? "Undefined";
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    string? username = isAuthenticated ? User.Identity?.Name : null ?? "Undefined";
+    string userId = User.GetUserId() ?? string.Empty;
 }
 
 <!DOCTYPE html>
@@ -34,13 +35,13 @@
                     </ul>
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item dropdown" style="margin-right: 150px;">
-                            @if (IsAuthenticated)
+                            @if (isAuthenticated)
                             {
                                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@username</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile</a>
-                                    <a class="dropdown-item" asp-controller="Friends" asp-action="All">Friends</a>
-                                    <a class="dropdown-item" asp-controller="Groups" asp-action="All">Groups</a>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile </a>
+                                    <a class="dropdown-item" asp-controller="Friends" asp-action="All">Friends <friends-request user-id="@userId" style="margin-top: -5px; width: 25px;" /></a>
+                                    <a class="dropdown-item" asp-controller="Groups" asp-action="All">Groups <groups-request user-id="@userId" style="margin-top: -5px; width: 25px;" /></a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Sign Out</a>
                                 </div>

@@ -42,8 +42,9 @@ namespace SocialConnect.Infrastructure.Repositories
                     return Enumerable.Empty<User>();
                 };
                 IEnumerable<User> friends = _dbContext.Friends
+                                                            .Where(friend => (!friend.IsAgreed && (friend.FriendId == userId || friend.UserId == userId)) || 
+                                                                                        (friend.IsAgreed && friend.FriendId == userId))
                                                             .ToList()
-                                                            .DistinctBy(friend => friend.IsAgreed)
                                                             .Select(friend =>
                                                             {
                                                                 string friendId = friend.FriendId == userId ? friend.UserId : friend.FriendId;

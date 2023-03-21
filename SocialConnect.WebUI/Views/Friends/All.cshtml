@@ -10,7 +10,7 @@
 }
 else
 {
-    @foreach(UserVM user in Model)
+    @foreach(UserVM user in Model.OrderByDescending(user => user.Status))
     {
         <div class="card border-success mb-3">
             <div class="card-body">
