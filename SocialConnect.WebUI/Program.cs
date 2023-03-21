@@ -46,6 +46,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+builder.Services.AddScoped<INewsRepository, NewsRepository>();
 builder.Services.AddScoped<IEmailService, EmailRepository>();
 
 // Automapper

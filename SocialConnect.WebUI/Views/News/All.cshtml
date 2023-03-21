@@ -1,0 +1,26 @@
+﻿@model IEnumerable<News>
+
+@{
+    ViewData["Title"] = "News";
+}
+
+@if (!Model.Any())
+{
+    <h3>There is no news... ;(</h3>
+}
+else
+{
+    @foreach (News news in Model)
+    {
+        <div class="card">
+            <div class="card-body">
+                <h3>@news.Title</h3>
+                <hr/>
+                <p>@news.Description</p>
+                <hr/>
+                <a><i class="bi bi-heart"></i> Like</a>
+                <a><i class="bi bi-card-text"></i> Comment</a>
+            </div>
+        </div>
+    }
+}
