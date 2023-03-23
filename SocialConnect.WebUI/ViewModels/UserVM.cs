@@ -1,4 +1,5 @@
-﻿using SocialConnect.WebUI.ViewModels.Enums;
+﻿using SocialConnect.Domain.Entities;
+using SocialConnect.WebUI.ViewModels.Enums;
 
 namespace SocialConnect.WebUI.ViewModels
 {

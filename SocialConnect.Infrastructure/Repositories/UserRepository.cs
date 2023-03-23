@@ -4,6 +4,7 @@ using SocialConnect.Domain.Interfaces;
 using SocialConnect.Shared.Models;
 using SocialConnect.Infrastructure.Interfaces;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialConnect.Domain.Entities.Constants;
 using Microsoft.Extensions.Logging;
@@ -16,28 +17,31 @@ namespace SocialConnect.Infrastructure.Repositories
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailService _emailService;
         private readonly ILogger<UserRepository> _logger;
+        private readonly IUrlHelper _urlHelper;
 
         public UserRepository(UserManager<User> userManager,
                               SignInManager<User> signInManager,
                               IEmailService emailService,
-                              ILogger<UserRepository> logger)
+                              ILogger<UserRepository> logger,
+                              IUrlHelper urlHelper)
         { 
             this._userManager = userManager;
             this._signInManager = signInManager;
             this._emailService = emailService;
             this._logger = logger;
+            this._urlHelper = urlHelper;
         }
 
         public async Task<User?> FindByIdAsync(string id)
         {
-            User? user = await _userManager.FindByIdAsync(id);
+            User? user = await FirstOrDefaultAsync(user => user.Id == id);
 
             return user;
         }
 
         public async Task<User?> FindByUsernameAsync(string username)
         {
-            User? user = await _userManager.FindByNameAsync(username);
+            User? user = await FirstOrDefaultAsync(user => user.UserName == username);
 
             return user;
         }
@@ -57,10 +61,11 @@ namespace SocialConnect.Infrastructure.Repositories
                 return false;
             }
             string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            string url = _urlHelper.Link("default", new { controller = "Account", action = "Confirmation", userid = user.Id, token = token });
             EmailMessage emailDto = new EmailMessage()
             {
                 Subject = "Confirm email",
-                Content = $"<h1>Confirm email</h1> <a href=https://localhost:7035/Account/Confirmation/?userid={user.Id}&token={token}>Click here to confirm email</a>",
+                Content = $"<h1>Confirm email</h1> <a href='{url}'>Click here to confirm email</a>",
                 Reciever = user.Email
             };
             await _emailService.SendAsync(emailDto);
@@ -110,8 +115,13 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             return await _userManager.Users.AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Likes)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Comments)
+                                                    .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
-                                           .ThenInclude(groupUser => groupUser.Group)
+                                                .ThenInclude(groupUser => groupUser.Group)
                                            .ToListAsync();
         }
 
@@ -119,8 +129,13 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             return await _userManager.Users.AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Likes)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Comments)
+                                                    .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
-                                           .ThenInclude(groupUser => groupUser.Group)
+                                                .ThenInclude(groupUser => groupUser.Group)
                                            .Where(expression)
                                            .ToListAsync();
         }
@@ -129,8 +144,13 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             return await _userManager.Users.AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Likes)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Comments)
+                                                    .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
-                                           .ThenInclude(groupUser => groupUser.Group)
+                                                .ThenInclude(groupUser => groupUser.Group)
                                            .FirstOrDefaultAsync(expression);
         }
 

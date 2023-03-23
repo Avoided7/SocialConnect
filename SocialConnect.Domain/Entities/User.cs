@@ -14,5 +14,6 @@ namespace SocialConnect.Domain.Entities
         // Relations
         public virtual IEnumerable<FriendsCouple> Friends { get; set; } = null!;
         public virtual IEnumerable<GroupUser> Groups { get; set; } = null!;
+        public virtual IEnumerable<News> News { get; set; } = null!;
     }
 }
