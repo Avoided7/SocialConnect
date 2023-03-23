@@ -10,8 +10,11 @@ public static class NewsExtenstion
                                                                  IEnumerable<string> users,
                                                                  IEnumerable<string> groups)
     {
-        IEnumerable<News> usersNews = await newsRepository.GetAsync(news => news.IsUserNews && users.Contains(news.UserId));
-        IEnumerable<News> groupNews = await newsRepository.GetAsync(news => !news.IsUserNews && groups.Contains(news.GroupId));
+        IEnumerable<News> usersNews = await newsRepository.GetAsync(news => news.GroupId == null &&
+                                                                                    users.Contains(news.UserId));
+        
+        IEnumerable<News> groupNews = await newsRepository.GetAsync(news => news.GroupId != null &&
+                                                                                    groups.Contains(news.GroupId));
         return usersNews.Concat(groupNews).OrderByDescending(news => news.WrittenIn);
     }
 }

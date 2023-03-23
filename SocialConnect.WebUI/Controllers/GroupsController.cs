@@ -14,12 +14,15 @@ namespace SocialConnect.WebUI.Controllers
     public class GroupsController : Controller
     {
         private readonly IGroupRepository _groupRepository;
+        private readonly INewsRepository _newsRepository;
         private readonly IMapper _mapper;
 
         public GroupsController(IGroupRepository groupRepository,
+                                INewsRepository newsRepository,
                                 IMapper mapper)
         {
             this._groupRepository = groupRepository;
+            _newsRepository = newsRepository;
             this._mapper = mapper;
         }
         [HttpGet]
@@ -79,14 +82,21 @@ namespace SocialConnect.WebUI.Controllers
         public async Task<IActionResult> Info(string groupName)
         {
             Group? group = await _groupRepository.FirstOrDefaultAsync(group => group.Name == groupName);
-
+            
             if (group == null)
             {
                 // TODO: Replace 'Bad Request' with error page/message.
                 return BadRequest();
             }
+            IEnumerable<News> news = await _newsRepository.GetAsync(news => news.GroupId == group.Id);
 
-            return View(group);
+            GroupWithNewsVM groupWithNews = new GroupWithNewsVM
+            {
+                Group = group,
+                News = news
+            };
+            
+            return View(groupWithNews);
         }
 
         [HttpGet]

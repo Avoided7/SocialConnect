@@ -4,6 +4,9 @@ using SocialConnect.Infrastructure.Data;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using SocialConnect.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,7 +50,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
-builder.Services.AddScoped<IEmailService, EmailRepository>();
+
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>()
+    .AddScoped(x => x.GetRequiredService<IUrlHelperFactory>()
+        .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext!));
+
+builder.Services.AddSingleton<IEmailService, EmailRepository>();
+
 
 // Automapper
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
