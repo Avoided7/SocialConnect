@@ -21,35 +21,29 @@ namespace SocialConnect.Infrastructure.Repositories
         }
         #region GET
 
-        public async Task<IEnumerable<FriendsCouple>> GetAsync()
+        public Task<IEnumerable<FriendsCouple>> GetAsync()
         {
-            return await _dbContext.Friends.ToListAsync();
+            return Task.Run(() => _dbContext.Friends.AsEnumerable());
         }
 
-        public async Task<IEnumerable<FriendsCouple>> GetAsync(Expression<Func<FriendsCouple, bool>> expression)
+        public Task<IEnumerable<FriendsCouple>> GetAsync(Expression<Func<FriendsCouple, bool>> expression)
         {
-            return await _dbContext.Friends.Where(expression).ToListAsync();
+            return Task.Run(() => _dbContext.Friends.Where(expression).AsEnumerable());
         }
 
         public async Task<IEnumerable<User>> GetUserFriendsAsync(string userId)
         {
             try
             {
-                User? user = await _dbContext.Users.Include(user => user.Friends)
-                                                   .FirstOrDefaultAsync(user => user.Id == userId);
-                if (user == null)
+                bool isUserExist = await _dbContext.Users.AnyAsync(user => user.Id == userId);
+                if (!isUserExist)
                 {
                     return Enumerable.Empty<User>();
                 };
                 IEnumerable<User> friends = _dbContext.Friends
                                                             .Where(friend => (!friend.IsAgreed && (friend.FriendId == userId || friend.UserId == userId)) || 
                                                                                         (friend.IsAgreed && friend.FriendId == userId))
-                                                            .ToList()
-                                                            .Select(friend =>
-                                                            {
-                                                                string friendId = friend.FriendId == userId ? friend.UserId : friend.FriendId;
-                                                                return _dbContext.Users.First(user => user.Id == friendId);
-                                                            });
+                                                            .Select(friend => _dbContext.Users.First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)));
                 return friends;
             }
             catch (Exception ex)
@@ -63,15 +57,14 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             try
             {
-                User? user = await _dbContext.Users.Include(user => user.Friends)
-                                                   .FirstOrDefaultAsync(user => user.Id == userId);
-                if (user == null)
+                bool isUserExist = await _dbContext.Users.AnyAsync(user => user.Id == userId);
+                if (!isUserExist)
                 {
                     return Enumerable.Empty<User>();
                 }
                 IEnumerable<User> friends = _dbContext.Friends.Where(expression)
                                                               .Select(friend => _dbContext.Users.Include(user => user.Friends)
-                                                                                                .First(user => user.Id == friend.FriendId || user.Id == friend.UserId));
+                                                                                                          .First(user => user.Id == friend.FriendId || user.Id == friend.UserId));
                 return friends;
             }
             catch (Exception ex)

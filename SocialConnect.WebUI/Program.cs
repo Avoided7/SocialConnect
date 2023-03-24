@@ -4,7 +4,6 @@ using SocialConnect.Infrastructure.Data;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using SocialConnect.Infrastructure.Repositories;
@@ -55,7 +54,7 @@ builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>()
     .AddScoped(x => x.GetRequiredService<IUrlHelperFactory>()
         .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext!));
 
-builder.Services.AddSingleton<IEmailService, EmailRepository>();
+builder.Services.AddSingleton<IMailKitEmailService, MailKitEmailService>();
 
 
 // Automapper

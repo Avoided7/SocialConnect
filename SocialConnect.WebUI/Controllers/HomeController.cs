@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
@@ -11,23 +10,16 @@ namespace SocialConnect.WebUI.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly IUserRepository _userRepository;
         private readonly IFriendRepository _friendRepository;
         private readonly IGroupRepository _groupRepository;
-        private readonly IMapper _mapper;
-
-        public HomeController(ILogger<HomeController> logger,
-                              IUserRepository userRepository,
+        public HomeController(IUserRepository userRepository,
                               IFriendRepository friendRepository,
-                              IGroupRepository groupRepository,
-                              IMapper mapper)
+                              IGroupRepository groupRepository)
         {
-            this._logger = logger;
             this._userRepository = userRepository;
             this._friendRepository = friendRepository;
             this._groupRepository = groupRepository;
-            this._mapper = mapper;
         }
 
         public IActionResult Index()

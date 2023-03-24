@@ -50,7 +50,7 @@ public class NewsController : Controller
                                                 .Select(group => group.GroupId!);
         
         IEnumerable<News> news = await _newsRepository.GetNewsFromUsersNGroupsAsync(friends, groups);
-        IEnumerable<string> groupsWithNews = news.Where(news => news.GroupId != null).Select(news => news.GroupId).Distinct();
+        IEnumerable<string> groupsWithNews = news.Where(news => news.GroupId != null).Select(news => news.GroupId!).Distinct();
         IEnumerable<Group> allGroups = await _groupRepository.GetAsync(group => groupsWithNews.Contains(group.Id));
 
         NewsWithGroupsVM newsWithGroups = new()

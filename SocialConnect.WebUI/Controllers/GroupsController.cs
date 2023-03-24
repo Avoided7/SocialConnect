@@ -68,9 +68,9 @@ namespace SocialConnect.WebUI.Controllers
                 return BadRequest();
             }
 
-            bool isLefted = await _groupRepository.LeftUserAsync(groupId: groupId, userId: userId);
+            bool isLeft = await _groupRepository.LeftUserAsync(groupId: groupId, userId: userId);
 
-            if (!isLefted)
+            if (!isLeft)
             {
                 // TODO: Replace 'Bad Request' with error message/page.
                 return BadRequest();
@@ -106,7 +106,7 @@ namespace SocialConnect.WebUI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(GroupVM groupVM)
+        public async Task<IActionResult> Create(GroupVM groupVm)
         {
             string? userId = User.GetUserId();
             if (userId == null)
@@ -117,10 +117,10 @@ namespace SocialConnect.WebUI.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(groupVM);
+                return View(groupVm);
             }
 
-            Group group = _mapper.Map<Group>(groupVM);
+            Group group = _mapper.Map<Group>(groupVm);
             Group? createdGroup = await _groupRepository.CreateAsync(group);
             if (createdGroup == null)
             {
@@ -128,7 +128,7 @@ namespace SocialConnect.WebUI.Controllers
                 return BadRequest();
             }
 
-            bool isJoined = await _groupRepository.JoinUserAsync(createdGroup.Id, userId);
+            await _groupRepository.JoinUserAsync(createdGroup.Id, userId);
 
             return RedirectToAction(nameof(Info), new { groupName = group.Name });
         }

@@ -1,12 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.WebUI.Extenstions;
-using SocialConnect.WebUI.ViewModels;
-using SocialConnect.WebUI.ViewModels.Enums;
-using System.Linq.Expressions;
 using System.Security.Claims;
 
 namespace SocialConnect.WebUI.Controllers
@@ -15,18 +11,15 @@ namespace SocialConnect.WebUI.Controllers
     public class FriendsController : Controller
     {
         private readonly IFriendRepository _friendRepository;
-        private readonly IMapper _mapper;
 
-        public FriendsController(IFriendRepository friendRepository,
-                                 IMapper mapper)
+        public FriendsController(IFriendRepository friendRepository)
         {
             this._friendRepository = friendRepository;
-            this._mapper = mapper;
         }
         [HttpGet]
         public async Task<IActionResult> All(string type = "all")
         {
-            string? userId = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
+            string? userId = User.GetUserId();
 
             if (userId == null )
             {

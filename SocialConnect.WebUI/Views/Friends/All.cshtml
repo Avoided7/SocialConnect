@@ -4,9 +4,36 @@
     ViewData["Title"] = "Friends";
     List<UserVM> friends = Model.Where(user => user.Status == FriendStatus.Friend).ToList();
     List<UserVM> sendedRequest = Model.Where(user => user.Status == FriendStatus.SendedRequest).ToList();
-    List<UserVM> waitedRequest = Model.Where(user => user.Status == FriendStatus.WaitedResponse).ToList();
+    List<UserVM> waitedResponse = Model.Where(user => user.Status == FriendStatus.WaitedResponse).ToList();
     
 }
+
+<style>
+    a
+    {
+        text-decoration: none;
+    }
+    a:hover
+    {
+        color: white;
+    }
+    main
+    {
+        font-size: 24px;
+    }
+    .request
+    {
+        color: #3e9ddd;
+    }
+    .response
+    {
+        color: #1ac398;
+    }
+    .friend
+    {
+        color: white;
+    }
+</style>
 
 @if(!Model.Any())
 {
@@ -14,75 +41,85 @@
 }
 else
 {
-    @if (waitedRequest.Any())
-    {
-        <h3>Waited Response</h3>
-        @foreach(UserVM user in waitedRequest)
+    <div class="col-md-4">
+        @if (waitedResponse.Any())
         {
-            <div class="card border-success mb-3">
-                <div class="card-body">
-                    <a class="alert-link" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
+            <div class="text-center">
+                <h3>Waited Response</h3>
+            </div>
+            @foreach(UserVM user in waitedResponse)
+            {
+                <div class="card border-success mb-3">
+                    <div class="card-body">
+                        <a class="response main" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
 
-                    <div class="float-end">
-                        <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item text-info" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
-                            
-                            <a class="dropdown-item text-success" asp-controller="Friends" asp-action="Accept" asp-route-friendid="@user.Id"><b>Accept</b></a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id"><b>Decline</b></a>
-                            
+                        <div class="float-end">
+                            <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item text-info" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
+                                
+                                <a class="dropdown-item text-success" asp-controller="Friends" asp-action="Accept" asp-route-friendid="@user.Id"><b>Accept</b></a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id"><b>Decline</b></a>
+                                
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
+            <hr/>
         }
-    }
-    @if (friends.Any())
-    {
-        <h3>Friends</h3>
-        @foreach(UserVM user in friends)
+        @if (friends.Any())
         {
-            <div class="card border-success mb-3">
-                <div class="card-body">
-                    <a class="alert-link" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
+            <div class="text-center">
+                <h3>Friends</h3>
+            </div>
+            @foreach(UserVM user in friends)
+            {
+                <div class="card border-light mb-3">
+                    <div class="card-body">
+                        <a class="friend main" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
 
-                    <div class="float-end">
-                        <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item text-info" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
+                        <div class="float-end">
+                            <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item text-info" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
 
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Delete" asp-route-friendid="@user.Id"><b>Delete</b></a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Delete" asp-route-friendid="@user.Id"><b>Delete</b></a>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <hr/>
+        }
+        @if (sendedRequest.Any())
+        {
+            <div class="text-center">
+                <h3>Sended Request</h3>
+            </div>
+            @foreach(UserVM user in sendedRequest)
+            {
+                <div class="card border-info mb-3">
+                    <div class="card-body">
+                        <a class="request main" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
+
+                        <div class="float-end">
+                            <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item text-info" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
                             
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id"><b>Decline</b></a>
+                            
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
+            <hr/>
         }
-    }
-    @if (sendedRequest.Any())
-    {
-        <h3>Sended Request</h3>
-        @foreach(UserVM user in sendedRequest)
-        {
-            <div class="card border-success mb-3">
-                <div class="card-body">
-                    <a class="alert-link" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
-
-                    <div class="float-end">
-                        <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item text-info" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username"><b>Profile</b></a>
-                        
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" asp-controller="Friends" asp-action="Decline" asp-route-friendid="@user.Id"><b>Decline</b></a>
-                        
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    }
-    
+    </div>
 }
