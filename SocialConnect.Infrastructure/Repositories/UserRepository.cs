@@ -26,9 +26,9 @@ namespace SocialConnect.Infrastructure.Repositories
 
         #region GET
 
-        public Task<IEnumerable<User>> GetAsync()
+        public Task<IQueryable<User>> GetAsync()
         {
-            return Task.Run(() => _dbContext.Users.AsNoTracking()
+            return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
@@ -37,12 +37,12 @@ namespace SocialConnect.Infrastructure.Repositories
                                                     .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
                                                 .ThenInclude(groupUser => groupUser.Group)
-                                           .AsEnumerable());
+                                           .AsNoTracking());
         }
 
-        public Task<IEnumerable<User>> GetAsync(Expression<Func<User, bool>> expression)
+        public Task<IQueryable<User>> GetAsync(Expression<Func<User, bool>> expression)
         {
-            return Task.Run(() => _dbContext.Users.AsNoTracking()
+            return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
@@ -51,13 +51,13 @@ namespace SocialConnect.Infrastructure.Repositories
                                                     .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
                                                 .ThenInclude(groupUser => groupUser.Group)
-                                           .Where(expression)
-                                           .AsEnumerable());
+                                           .AsNoTracking()
+                                           .Where(expression));
         }
 
         public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> expression)
         {
-            return await _dbContext.Users.AsNoTracking()
+            return await _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
@@ -75,7 +75,7 @@ namespace SocialConnect.Infrastructure.Repositories
 
         public async Task<User?> CreateAsync(User entity)
         {
-            await _dbContext.Users.AddAsync(entity);
+            await _dbContext.SocialUsers.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             return entity;
         }
@@ -86,7 +86,7 @@ namespace SocialConnect.Infrastructure.Repositories
 
         public async Task<User?> UpdateAsync(string id, User entity)
         {
-            User? user = await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == id);
+            User? user = await _dbContext.SocialUsers.FirstOrDefaultAsync(user => user.Id == id);
 
             if(user == null)
             {
@@ -100,7 +100,7 @@ namespace SocialConnect.Infrastructure.Repositories
             user.DateOfBirth = entity.DateOfBirth;
             user.Gender = entity.Gender;
 
-            _dbContext.Users.Update(user);
+            _dbContext.SocialUsers.Update(user);
             await _dbContext.SaveChangesAsync();
 
             return user;
@@ -113,14 +113,14 @@ namespace SocialConnect.Infrastructure.Repositories
 
         public async Task<bool> DeleteAsync(string id)
         {
-            User? user = await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == id);
+            User? user = await _dbContext.SocialUsers.FirstOrDefaultAsync(user => user.Id == id);
 
             if (user == null)
             {
                 return false;
             }
             
-            _dbContext.Users.Remove(user);
+            _dbContext.SocialUsers.Remove(user);
             await _dbContext.SaveChangesAsync();
             return true;
         }

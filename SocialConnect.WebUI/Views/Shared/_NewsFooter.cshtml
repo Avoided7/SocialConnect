@@ -3,7 +3,7 @@
 @{
     string userId = User.GetUserId() ?? "";
     string heart = Model.Likes.Any(like => like.UserId == userId) ? "heart-fill" : "heart";
-    string groupName = ViewData["GroupName"] as string ?? "";
+    string groupName = Model.Group?.Name ?? "";
 }
 
 <style>

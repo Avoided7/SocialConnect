@@ -22,10 +22,6 @@ namespace SocialConnect.WebUI.Controllers
             this._groupRepository = groupRepository;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
         public async Task<IActionResult> Users()
         {
             string? userId = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;

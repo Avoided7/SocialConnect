@@ -31,10 +31,14 @@ namespace SocialConnect.WebUI.Controllers
             string? userId = User.GetUserId();
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
-            IEnumerable<Group> groups = await _groupRepository.GetAsync(group => group.Users.Any(u => u.UserId == userId));
+            IQueryable<Group> groups = await _groupRepository.GetAsync(group => group.Users.Any(u => u.UserId == userId));
             return View(groups);
         }
         [HttpGet]
@@ -44,16 +48,24 @@ namespace SocialConnect.WebUI.Controllers
 
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
 
             bool isJoined = await _groupRepository.JoinUserAsync(groupId: groupId, userId: userId);
 
             if(!isJoined)
             {
-                // TODO: Replace 'Bad Request' with error message/page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Join error?!",
+                    Content = "Try join later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -64,16 +76,24 @@ namespace SocialConnect.WebUI.Controllers
             string? userId = User.GetUserId();
             if(userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
 
             bool isLeft = await _groupRepository.LeftUserAsync(groupId: groupId, userId: userId);
 
             if (!isLeft)
             {
-                // TODO: Replace 'Bad Request' with error message/page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Left error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -82,21 +102,18 @@ namespace SocialConnect.WebUI.Controllers
         public async Task<IActionResult> Info(string groupName)
         {
             Group? group = await _groupRepository.FirstOrDefaultAsync(group => group.Name == groupName);
-            
+
             if (group == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Not found?!",
+                    Content = "Group not found! Please check group name."
+                };
+                return View("Error", error);
             }
-            IEnumerable<News> news = await _newsRepository.GetAsync(news => news.GroupId == group.Id);
 
-            GroupWithNewsVM groupWithNews = new GroupWithNewsVM
-            {
-                Group = group,
-                News = news
-            };
-            
-            return View(groupWithNews);
+            return View(group);
         }
 
         [HttpGet]
@@ -111,8 +128,12 @@ namespace SocialConnect.WebUI.Controllers
             string? userId = User.GetUserId();
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
 
             if (!ModelState.IsValid)
@@ -124,8 +145,12 @@ namespace SocialConnect.WebUI.Controllers
             Group? createdGroup = await _groupRepository.CreateAsync(group);
             if (createdGroup == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Create group error?!",
+                    Content = "Try create group later."
+                };
+                return View("Error", error);
             }
 
             await _groupRepository.JoinUserAsync(createdGroup.Id, userId);
@@ -139,8 +164,12 @@ namespace SocialConnect.WebUI.Controllers
             string? userId = User.GetUserId();
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool isFounder = await _groupRepository.IsFounderAsync(groupId, userId);
 
@@ -153,11 +182,15 @@ namespace SocialConnect.WebUI.Controllers
 
             if (!isDeleted)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Delete error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("All", "News");
         }
 
         [HttpGet]
@@ -166,14 +199,22 @@ namespace SocialConnect.WebUI.Controllers
             string? currentUserId = User.GetUserId();
             if (currentUserId == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool isKicked = await _groupRepository.KickUserAsync(currentUserId, userId, groupId);
             if(!isKicked)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Kick error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -185,16 +226,24 @@ namespace SocialConnect.WebUI.Controllers
             string? currentUserId = User.GetUserId();
             if (currentUserId == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
 
             bool isAccepted = await _groupRepository.AcceptUserAsync(currentUserId, userId, groupId);
 
             if (!isAccepted)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Accept error?!",
+                    Content = "Try accept later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -206,8 +255,12 @@ namespace SocialConnect.WebUI.Controllers
             string? currentUserId = User.GetUserId();
             if (currentUserId == null)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
 
             bool isDeclined;
@@ -223,8 +276,12 @@ namespace SocialConnect.WebUI.Controllers
             
             if (!isDeclined)
             {
-                // TODO: Replace 'Bad Request' with error page/message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -236,13 +293,21 @@ namespace SocialConnect.WebUI.Controllers
             string? currentUserId = User.GetUserId();
             if (currentUserId == null)
             {
-                // TODO: Replace 'Bad Request' with error message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             if(!Enum.TryParse(status, true, out GroupUserStatus userStatus))
             {
-                // TODO: Replace 'Bad Request' with error message.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Status error?!",
+                    Content = "Incorrect user status."
+                };
+                return View("Error", error);
             }
             bool isPromoted = await _groupRepository.PromoteUserAsync(currentUserId, userId, groupId, userStatus);
 

@@ -4,6 +4,7 @@ using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.WebUI.Extenstions;
 using System.Security.Claims;
+using SocialConnect.WebUI.ViewModels;
 
 namespace SocialConnect.WebUI.Controllers
 {
@@ -57,15 +58,23 @@ namespace SocialConnect.WebUI.Controllers
 
             if(userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool accepted = await _friendRepository.AcceptAsync(friendId, userId);
 
             if(!accepted)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -77,15 +86,23 @@ namespace SocialConnect.WebUI.Controllers
 
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool accepted = await _friendRepository.DeclineAsync(friendId, userId);
 
             if (!accepted)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -97,15 +114,23 @@ namespace SocialConnect.WebUI.Controllers
 
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool deleted = await _friendRepository.DeleteAsync(userId, friendId);
 
             if (!deleted)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);

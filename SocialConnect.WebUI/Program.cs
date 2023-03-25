@@ -18,7 +18,7 @@ string connectionString = builder.Configuration.GetConnectionString("SocialDbCon
 builder.Services.AddDbContext<SocialDbContext>(context => context.UseSqlServer(connectionString));
 
 // Identity
-builder.Services.AddDefaultIdentity<User>(options =>
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
                 {
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequiredLength = 8;
@@ -29,7 +29,7 @@ builder.Services.AddDefaultIdentity<User>(options =>
 
                     options.User.RequireUniqueEmail = true;
 
-                    options.SignIn.RequireConfirmedEmail = true;
+                    options.SignIn.RequireConfirmedEmail = false;
                 })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<SocialDbContext>();
@@ -49,6 +49,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>()
     .AddScoped(x => x.GetRequiredService<IUrlHelperFactory>()
@@ -72,8 +73,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}");
+    pattern: "{controller=News}/{action=All}");
 
-SeedDB.SeedRoles(app);
+app.SeedRoles();
 
 app.Run();

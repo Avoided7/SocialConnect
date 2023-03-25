@@ -16,7 +16,7 @@ namespace SocialConnect.WebUI.Extenstions
             IReadOnlyList<FriendsCouple> friendsList = friends.ToList();
             return users.Select(user =>
             {
-                UserVM userVM = new UserVM
+                UserVM userVm = new UserVM
                 { 
                     Id = user.Id,
                     Firstname = user.Firstname,
@@ -25,22 +25,22 @@ namespace SocialConnect.WebUI.Extenstions
                 };
                 if (friendsList.Any(friend => friend.FriendId == user.Id && friend.IsAgreed))
                 {
-                    userVM.Status = FriendStatus.Friend;
+                    userVm.Status = FriendStatus.Friend;
                 }
                 else if (friendsList.Any(friend => friend.FriendId == user.Id && !friend.IsAgreed))
                 {
-                    userVM.Status = FriendStatus.SendedRequest;
+                    userVm.Status = FriendStatus.SendedRequest;
                 }
                 else if (friendsList.Any(friend => friend.UserId == user.Id && !friend.IsAgreed))
                 {
-                    userVM.Status = FriendStatus.WaitedResponse;
+                    userVm.Status = FriendStatus.WaitedResponse;
                 }
                 else
                 {
-                    userVM.Status = FriendStatus.Noname;
+                    userVm.Status = FriendStatus.Noname;
                 }
 
-                return userVM;
+                return userVm;
             });
         }
     }

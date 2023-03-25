@@ -1,4 +1,4 @@
-﻿@model NewsWithGroupsVM
+﻿@model IEnumerable<News>
 
 @{
     ViewData["Title"] = "News";
@@ -7,35 +7,35 @@
 
 
 <div class="col-md-6">
+    <h3 class="text-center">News</h3>
     <form method="post" asp-action="Create">
         <div class="card mb-3">
             <div class="card-body">
-                <h3>Tell something about your day!</h3>
+                <h4>Tell something about your day!</h4>
                 <hr/>
                 <input class="form-control bg-body text-white mb-2" name="title" placeholder="Title"/>
                 <textarea class="form-control bg-body text-white mb-2" name="description" placeholder="Description" style="max-height: 200px;"></textarea>
-                
+
                 <hr/>
                 <button class="btn btn-success">CREATE</button>
             </div>
         </div>
     </form>
 
-    @if (!Model.News.Any())
+    @if (!Model.Any())
     {
         <h3>There is no news... ;(</h3>
     }
     else
     {
         <hr style="background-color: white; height: 2px; border: none;"/>
-        @foreach (News news in Model.News)
+        @foreach (News news in Model)
         {
-            string heart = news.Likes.Any(like => like.UserId == userId) ? "heart-fill" : "heart";
             <div class="card mb-2">
                 <div class="card-body">
                     <h4>@news.Title</h4>
                     <span style="font-style: italic;">
-                        @if(news.WrittenIn < DateTime.UtcNow.AddDays(-6))
+                        @if (news.WrittenIn < DateTime.UtcNow.AddDays(-6))
                         {
                             @news.WrittenIn.ToLongDateString()
                         }
@@ -43,15 +43,11 @@
                         {
                             @news.WrittenIn.DayOfWeek
                         }
-                        
+
                         at @news.WrittenIn.ToShortTimeString()
                     </span>
                     <hr/>
                     <p>@news.Description</p>
-                    @if (!news.IsUserNews)
-                    {
-                        ViewData["GroupName"] = Model.Groups.First(group => group.Id == news.GroupId).Name;
-                    }
                     @(await Html.PartialAsync("_NewsFooter", news))
 
                 </div>

@@ -8,27 +8,28 @@ using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Entities.Constants;
 using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Shared.Models;
+using SocialConnect.WebUI.Extenstions;
 
 namespace SocialConnect.WebUI.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IUserRepository _accountRepository;
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly IUserRepository _userRepository;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IMailKitEmailService _emailService;
         private readonly IMapper _mapper;
 
-        public AccountController(IUserRepository accountRepository,
-                                 UserManager<User> userManager,
-                                 SignInManager<User> signInManager,
-                                 IMailKitEmailService emailService,
-                                 IMapper mapper)
+        public AccountController(IUserRepository userRepository,
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager,
+            IMailKitEmailService emailService,
+            IMapper mapper)
         {
-            this._accountRepository = accountRepository;
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _emailService = emailService;
+            this._userRepository = userRepository;
+            this._userManager = userManager;
+            this._signInManager = signInManager;
+            this._emailService = emailService;
             this._mapper = mapper;
         }
 
@@ -39,23 +40,26 @@ namespace SocialConnect.WebUI.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginVM loginVm)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View(loginVm);
             }
 
-            User? user = await _userManager.FindByNameAsync(loginVm.Username);
+            IdentityUser? user = await _userManager.FindByNameAsync(loginVm.Username);
             if (user == null)
             {
                 ModelState.AddModelError("", "Incorrect login/password.");
                 return View(loginVm);
             }
-            Microsoft.AspNetCore.Identity.SignInResult signInResult = await _signInManager.PasswordSignInAsync(user, loginVm.Password, true, true);
 
-            if(!signInResult.Succeeded)
+            Microsoft.AspNetCore.Identity.SignInResult signInResult =
+                await _signInManager.PasswordSignInAsync(user, loginVm.Password, true, true);
+
+            if (!signInResult.Succeeded)
             {
                 ModelState.AddModelError("", "Incorrect login/password.");
                 return View(loginVm);
@@ -73,14 +77,16 @@ namespace SocialConnect.WebUI.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Register(RegisterVM registerVm)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View(registerVm);
             }
-            User user = _mapper.Map<User>(registerVm);
+
+            IdentityUser user = _mapper.Map<IdentityUser>(registerVm);
             IdentityResult registerResult = await _userManager.CreateAsync(user, registerVm.Password);
 
             if (!registerResult.Succeeded)
@@ -89,19 +95,16 @@ namespace SocialConnect.WebUI.Controllers
                 {
                     ModelState.AddModelError("", error.Description);
                 }
+
                 return View(registerVm);
             }
-            string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            string url = Url.ActionLink(nameof(Confirmation), "Account", new { userId = user.Id, token }) ?? "";
-            
-            EmailMessage emailMessage = new EmailMessage()
-            {
-                Subject = "Confirm email",
-                Content = $"<h1>Confirm email</h1> <a href='{url}'>Click here to confirm email</a>",
-                Reciever = user.Email
-            };
 
-            _emailService.SendAsync(emailMessage);
+            User createdUser = _mapper.Map<User>(registerVm);
+            createdUser.Id = user.Id;
+            await _userRepository.CreateAsync(createdUser);
+
+            await SendConfirmLetterAsync();
+
             return RedirectToAction(nameof(Login));
         }
 
@@ -110,16 +113,17 @@ namespace SocialConnect.WebUI.Controllers
 
         #region Profile
 
-        [HttpGet("{action}/{username?}")]
+        [HttpGet("{controller}/{action}/{username?}")]
         public async Task<IActionResult> Profile(string? username)
         {
-            if(username == null)
+            if (username == null)
             {
                 username = User.Identity?.Name ?? "";
             }
-            User? user = await _accountRepository.FindByUsernameAsync(username);
 
-            if(user == null)
+            User? user = await _userRepository.FindByUsernameAsync(username);
+
+            if (user == null)
             {
                 return View();
             }
@@ -136,7 +140,7 @@ namespace SocialConnect.WebUI.Controllers
         {
             await _signInManager.SignOutAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", "Account");
         }
 
         #endregion
@@ -147,8 +151,8 @@ namespace SocialConnect.WebUI.Controllers
         public async Task<IActionResult> Confirmation(string userId, string token)
         {
             token = token.Replace(' ', '+');
-            
-            User? user = await _userManager.FindByIdAsync(userId);
+
+            IdentityUser? user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
@@ -161,12 +165,96 @@ namespace SocialConnect.WebUI.Controllers
             {
                 return BadRequest();
             }
-            
-            await _userManager.AddToRoleAsync(user, UserConstant.USER);
 
+            await _userManager.AddToRoleAsync(user, UserConstant.USER);
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction(nameof(Profile));
+            }
             return RedirectToAction(nameof(Login));
         }
 
         #endregion
+
+        #region Settings
+
+        [Authorize]
+        public async Task<IActionResult> Settings()
+        {
+            string? userId = User.GetUserId();
+
+            if (userId == null)
+            {
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
+            }
+
+            IdentityUser? user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
+            }
+
+            return View(user);
+        }
+
+        #endregion
+
+        #region Resend Letter
+
+        [Authorize]
+        public async Task<IActionResult> ResendConfirmationLetter()
+        {
+            await SendConfirmLetterAsync();
+
+            return Redirect(Request.Headers["Referer"]);
+        }
+
+        #endregion
+
+        #region Private methods
+
+        private async Task SendConfirmLetterAsync()
+        {
+            string? userId = User.GetUserId();
+
+            if (userId == null)
+            {
+                return;
+            }
+            
+            IdentityUser user = await _userManager.FindByIdAsync(userId);
+
+            if (user.EmailConfirmed)
+            {
+                return;
+            }
+            
+            string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            string url = Url.ActionLink(nameof(Confirmation), "Account", new { userId = user.Id, token }) ?? "";
+
+            EmailMessage emailMessage = new EmailMessage()
+            {
+                Subject = "Confirm email",
+                Content = $"<h1>Confirm email</h1> <a href='{url}'>Click here to confirm email</a>",
+                Reciever = user.Email
+            };
+
+            _emailService.SendAsync(emailMessage);
+
+        }
+
+        #endregion
+        
     }
 }

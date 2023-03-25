@@ -4,7 +4,7 @@ using SocialConnect.Domain.Entities;
 
 namespace SocialConnect.Infrastructure.Data
 {
-    public class SocialDbContext : IdentityDbContext<User>
+    public class SocialDbContext : IdentityDbContext
     {
         public DbSet<FriendsCouple> Friends { get; set; } = null!;
         public DbSet<Group> Groups { get; set; } = null!;
@@ -13,6 +13,7 @@ namespace SocialConnect.Infrastructure.Data
         public DbSet<Comment> Comments  { get; set; } = null!;
         public DbSet<CommentLike> CommentLikes { get; set; } = null!;
         public DbSet<NewsLike> NewsLikes { get; set; } = null!;
+        public DbSet<User> SocialUsers { get; set; } = null!;
         public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options)
         { }
 
