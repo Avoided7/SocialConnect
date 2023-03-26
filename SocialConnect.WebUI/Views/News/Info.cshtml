@@ -4,7 +4,6 @@
     ViewData["Title"] = Model.Title;
     string userId = User.GetUserId() ?? string.Empty;
 }
-<div class="col-md-6">
 <div class="card mb-3">
     <div class="card-body">
         <h3>@Model.Title</h3>
@@ -35,4 +34,3 @@ else
 {
     <h3>No comments...</h3>
 }
-</div>

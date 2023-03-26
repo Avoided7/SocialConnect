@@ -103,7 +103,15 @@ namespace SocialConnect.WebUI.Controllers
             createdUser.Id = user.Id;
             await _userRepository.CreateAsync(createdUser);
 
-            await SendConfirmLetterAsync();
+            AlertBoxVM alertBox = new()
+            {
+                IsSucceeded = true,
+                Title = "Successfully registered!",
+                Content =
+                    "You're successfully registered. Now you can login. We sent letter to your email with confirmation."
+            };
+            HttpContext.Session.SetJson("confirmation", alertBox);
+            await SendConfirmLetterAsync(user.Id);
 
             return RedirectToAction(nameof(Login));
         }
@@ -167,10 +175,20 @@ namespace SocialConnect.WebUI.Controllers
             }
 
             await _userManager.AddToRoleAsync(user, UserConstant.USER);
+
+            AlertBoxVM alertBox = new()
+            {
+                IsSucceeded = true,
+                Title = "Successfully confirmed!",
+                Content = "Your account is successfully confirmed."
+            };
+            HttpContext.Session.SetJson("confirmation", alertBox);
+
             if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction(nameof(Profile));
             }
+            
             return RedirectToAction(nameof(Login));
         }
 
@@ -224,9 +242,12 @@ namespace SocialConnect.WebUI.Controllers
 
         #region Private methods
 
-        private async Task SendConfirmLetterAsync()
+        private async Task SendConfirmLetterAsync(string? userId = "")
         {
-            string? userId = User.GetUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = User.GetUserId();
+            }
 
             if (userId == null)
             {

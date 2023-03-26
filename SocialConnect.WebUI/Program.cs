@@ -38,6 +38,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
+// Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -70,6 +74,9 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSession();
+
 
 app.MapControllerRoute(
     name: "default",

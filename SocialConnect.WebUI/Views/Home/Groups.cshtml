@@ -4,7 +4,6 @@
     ViewData["Title"] = "All Groups";
     string userId = User.GetUserId() ?? "";
 }
-<div class="col-md-6">
 @foreach (Group group in Model)
 {
     bool isFounder = group.Users.FirstOrDefault(group => group.UserId == userId)?.UserStatus == GroupUserStatus.Founder;
@@ -24,4 +23,3 @@
         </div>
     </div>
 }
-</div>

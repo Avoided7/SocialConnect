@@ -5,53 +5,52 @@
     string userId = User.GetUserId() ?? string.Empty;
 }
 
+<h3 class="text-center">News</h3>
+<form method="post" asp-action="Create">
+    <div class="card mb-3">
+        <div class="card-body">
+            <h4>Tell something about your day!</h4>
+            <hr/>
+            <input class="form-control bg-body text-white mb-2" name="title" placeholder="Title"/>
+            <textarea class="form-control bg-body text-white mb-2" name="description" placeholder="Description" style="max-height: 200px;"></textarea>
 
-<div class="col-md-6">
-    <h3 class="text-center">News</h3>
-    <form method="post" asp-action="Create">
-        <div class="card mb-3">
+            <hr/>
+            <button class="btn btn-success">CREATE</button>
+        </div>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <h3>There is no news... ;(</h3>
+}
+else
+{
+    <hr style="background-color: white; height: 2px; border: none;"/>
+    @foreach (News news in Model)
+    {
+        <div class="card mb-2">
             <div class="card-body">
-                <h4>Tell something about your day!</h4>
-                <hr/>
-                <input class="form-control bg-body text-white mb-2" name="title" placeholder="Title"/>
-                <textarea class="form-control bg-body text-white mb-2" name="description" placeholder="Description" style="max-height: 200px;"></textarea>
+                <h4>@news.Title</h4>
+                <span style="font-style: italic;">
+                    @if (news.WrittenIn < DateTime.UtcNow.AddDays(-6))
+                    {
+                        @news.WrittenIn.ToLongDateString()
+                    }
+                    else
+                    {
+                        @news.WrittenIn.DayOfWeek
+                    }
 
+                    at @news.WrittenIn.ToShortTimeString()
+                </span>
                 <hr/>
-                <button class="btn btn-success">CREATE</button>
+                <p>@news.Description</p>
+                @(await Html.PartialAsync("_NewsFooter", news))
+
             </div>
         </div>
-    </form>
-
-    @if (!Model.Any())
-    {
-        <h3>There is no news... ;(</h3>
     }
-    else
-    {
-        <hr style="background-color: white; height: 2px; border: none;"/>
-        @foreach (News news in Model)
-        {
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h4>@news.Title</h4>
-                    <span style="font-style: italic;">
-                        @if (news.WrittenIn < DateTime.UtcNow.AddDays(-6))
-                        {
-                            @news.WrittenIn.ToLongDateString()
-                        }
-                        else
-                        {
-                            @news.WrittenIn.DayOfWeek
-                        }
+}
 
-                        at @news.WrittenIn.ToShortTimeString()
-                    </span>
-                    <hr/>
-                    <p>@news.Description</p>
-                    @(await Html.PartialAsync("_NewsFooter", news))
 
-                </div>
-            </div>
-        }
-    }
-</div>
