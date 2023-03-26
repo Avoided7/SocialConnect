@@ -1,25 +1,49 @@
-﻿@model IEnumerable<Group>
+﻿@model IQueryable<Group>
 
 @{
     ViewData["Title"] = "Groups";
     string userId = User.GetUserId() ?? "";
 }
 <a class="btn btn-primary" style="position: fixed; right: 25px; bottom: 25px; width: 100px;" asp-controller="Groups" asp-action="Create">Create</a>
-@foreach(Group group in Model)
+
+@if (!Model.Any())
+{
+    <h3 class="text-center">Nothing...</h3>
+}
+else
+{
+    <h3 class="text-center">Groups</h3>
+}
+@foreach (Group group in Model)
 {
     GroupUser? user = group.Users.FirstOrDefault(user => user.UserId == userId);
     GroupUserStatus status = user?.UserStatus ?? GroupUserStatus.User;
+    string description = group.Description.Substring(0, Math.Min(100, group.Description.Length)) + (group.Description.Length > 100 ? "..." : "");
     <div class="card mb-3">
         <div class="card-body">
-            <h3>
+            <h4>
                 <a class="link-light" asp-controller="Groups" asp-action="Info" asp-route-groupName="@group.Name">@group.Name</a>
                 @if (status == GroupUserStatus.Founder)
                 {
-                    <abbr title="You are Founder"><i class="bi bi-star"></i></abbr>
+                    <abbr title="You are Founder">
+                        <i class="bi bi-star"></i>
+                    </abbr>
                 }
-            </h3>
-            <p style="font-style: italic;">@group.UserCount users</p>
-            <hr />
+            </h4>
+            <p style="font-style: italic;">
+                @group.UserCount users
+                
+                @if (status != GroupUserStatus.User)
+                {
+                    int requestsCount = group.Users.Count(user => !user.IsAgreed);
+                    if (requestsCount > 0)
+                    {
+                        <text>, <span class="text-warning">@requestsCount request(s)</span></text>
+                    }
+                }
+            </p>
+            <hr/>
+            <p>@description</p>
             @if (status == GroupUserStatus.Founder)
             {
                 <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Delete" asp-route-groupId="@group.Id">Delete</a>

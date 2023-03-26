@@ -2,10 +2,8 @@
 
 @{
     ViewData["Title"] = Model.Title;
-    IEnumerable<User> commentsUsers = ViewData["Comments"] as IEnumerable<User> ?? Enumerable.Empty<User>();
     string userId = User.GetUserId() ?? string.Empty;
 }
-
 <div class="card mb-3">
     <div class="card-body">
         <h3>@Model.Title</h3>
@@ -20,7 +18,7 @@
         <div class="card-body">
             @foreach (Comment comment in Model.Comments)
             {
-                User user = commentsUsers.First(user => user.Id == comment.UserId);
+                User user = comment.User!;
                 string heart = comment.Likes.Any(like => like.UserId == userId) ? "heart-fill" : "heart";
                 <div class="mb-2">
                     <p>@comment.Content</p>

@@ -9,7 +9,7 @@ namespace SocialConnect.Domain.Interfaces
         Task<bool> AcceptAsync(string userId, string friendId);
         Task<bool> DeclineAsync(string userId, string friendId);
         Task<bool> DeleteAsync(string userId, string friendId);
-        Task<IEnumerable<User>> GetUserFriendsAsync(string userId);
-        Task<IEnumerable<User>> GetUserFriendsAsync(string userId, Expression<Func<FriendsCouple, bool>> expression);
+        Task<IQueryable<User>> GetUserFriendsAsync(string userId);
+        Task<IQueryable<User>> GetUserFriendsAsync(string userId, Expression<Func<FriendsCouple, bool>> expression);
     }
 }

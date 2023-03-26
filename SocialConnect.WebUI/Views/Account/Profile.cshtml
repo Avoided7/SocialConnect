@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = Model.UserName;
     string userId = User.GetUserId() ?? string.Empty;
+    IReadOnlyCollection<News> allNews = Model.News.Where(news => news.GroupId == null).OrderByDescending(news => news.WrittenIn).ToList();
 }
 
 <style>
@@ -24,40 +25,28 @@
         color: white;
     }
 </style>
-<div class="col-md-6">
-    <div class="card mb-3">
-        <div class="card-body">
-            <h3>@Model.UserName</h3>
-            <hr/>
-            <b>Birthday: @Model.DateOfBirth.ToShortDateString()</b>
-        </div>
-    </div>
-
-    @if (Model.News.Any())
-    {
+<div class="card mb-3">
+    <div class="card-body">
+        <h3>@Model.UserName</h3>
         <hr/>
-        <h3 class="text-center">News</h3>
-        @foreach (News news in Model.News)
-        {
-            string heart = news.Likes.Any(like => like.UserId == userId) ? "heart-fill" : "heart";
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h4>@news.Title</h4>
-                    <hr/>
-                    <p>@news.Description</p>
-                    
-                    <a class="like" asp-controller="News" asp-action="Like" asp-route-id="@news.Id"style="margin-right: 15px; text-decoration: none;"><i class="bi bi-@heart"></i> Like | @news.Likes.Count()</a>
-                    <a class="comment" asp-controller="News" asp-action="Info" asp-route-id="@news.Id" style="text-decoration: none;"><i class="bi bi-card-text"></i> Comments | @news.Comments.Count()</a>
-                    
-                    <a class="text-white" asp-controller="Account" asp-action="Profile" asp-route-username="@news.User.UserName" style="float: right;"><i class="bi bi-person-circle"></i> @news.User.UserName</a>
-                    <hr/>
-                    <form class="align-middle" method="post" asp-controller="News" asp-action="Comment">
-                        <input hidden="hidden" name="id" value="@news.Id"/>
-                        <textarea class="form-control bg-body text-white" name="Content" placeholder="Comment" style="width: 78%; float: left; max-height: 100px; height: 25px;"></textarea>
-                        <button class="btn btn-primary" style="width: 20%; float: right;">Comment</button>
-                    </form>          
-                </div>
-            </div>
-        }
-    }
+        <b>Birthday: @Model.DateOfBirth.ToShortDateString()</b>
+    </div>
 </div>
+
+@if (allNews.Any())
+{
+    <hr/>
+    <h3 class="text-center">News</h3>
+    @foreach (News news in allNews)
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <h4>@news.Title</h4>
+                <hr/>
+                <p>@news.Description</p>
+                
+                @(await Html.PartialAsync("_NewsFooter", news))        
+            </div>
+        </div>
+    }
+}

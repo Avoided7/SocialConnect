@@ -13,33 +13,34 @@ namespace SocialConnect.WebUI.Extenstions
         }
         public static IEnumerable<UserVM> GetFriendsStatus(this IEnumerable<User> users, IEnumerable<FriendsCouple> friends)
         {
+            IReadOnlyList<FriendsCouple> friendsList = friends.ToList();
             return users.Select(user =>
             {
-                UserVM userVM = new UserVM
+                UserVM userVm = new UserVM
                 { 
                     Id = user.Id,
                     Firstname = user.Firstname,
                     Lastname = user.Lastname,
                     Username = user.UserName
                 };
-                if (friends.Any(friend => friend.FriendId == user.Id && friend.IsAgreed))
+                if (friendsList.Any(friend => friend.FriendId == user.Id && friend.IsAgreed))
                 {
-                    userVM.Status = FriendStatus.Friend;
+                    userVm.Status = FriendStatus.Friend;
                 }
-                else if (friends.Any(friend => friend.FriendId == user.Id && !friend.IsAgreed))
+                else if (friendsList.Any(friend => friend.FriendId == user.Id && !friend.IsAgreed))
                 {
-                    userVM.Status = FriendStatus.SendedRequest;
+                    userVm.Status = FriendStatus.SendedRequest;
                 }
-                else if (friends.Any(friend => friend.UserId == user.Id && !friend.IsAgreed))
+                else if (friendsList.Any(friend => friend.UserId == user.Id && !friend.IsAgreed))
                 {
-                    userVM.Status = FriendStatus.WaitedResponse;
+                    userVm.Status = FriendStatus.WaitedResponse;
                 }
                 else
                 {
-                    userVM.Status = FriendStatus.Noname;
+                    userVm.Status = FriendStatus.Noname;
                 }
 
-                return userVM;
+                return userVm;
             });
         }
     }

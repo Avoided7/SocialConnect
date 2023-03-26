@@ -1,43 +1,42 @@
-﻿@model GroupWithNewsVM
+﻿@model Group
 
 @{
-    ViewData["Title"] = Model.Group.Name;
-    ViewData["GroupName"] = Model.Group.Name;
+    ViewData["Title"] = Model.Name;
     string userId = User.GetUserId() ?? "";
     string currentUserName = User.Identity?.Name ?? "";
-    GroupUser? user = Model.Group.Users.FirstOrDefault(user => user.UserId == userId);
+    GroupUser? user = Model.Users.FirstOrDefault(user => user.UserId == userId);
     GroupUserStatus status = user?.UserStatus ?? GroupUserStatus.User;
 }
 
 <div class="card mb-3">
     <div class="card-body">
-        <h3>@Model.Group.Name</h3>
+        <h3>@Model.Name</h3>
         <hr/>
-        <p>@Model.Group.Description</p>
+        <p>@Model.Description</p>
         <hr/>
         @if (user == null)
         {
             <div class="row" style="margin: 5px;">
-                <a class="btn btn-success" asp-controller="Groups" asp-action="Join" asp-route-groupId="@Model.Group.Id">Join</a>
+                <a class="btn btn-success" asp-controller="Groups" asp-action="Join" asp-route-groupId="@Model.Id">Join</a>
             </div>
         }
         else if (user.UserStatus == GroupUserStatus.Founder)
         {
             <div class="row" style="margin: 5px;">
-                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Delete" asp-route-groupId="@Model.Group.Id">Delete</a>
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Delete" asp-route-groupId="@Model.Id">Delete</a>
             </div>
         }
         else if (user.UserStatus == GroupUserStatus.User && !user.IsAgreed)
         {
             <a class="dropdown-toggle btn btn-primary" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Waited Response</a>
             <div class="dropdown-menu">
-                <a class="dropdown-item text-danger" asp-controller="Groups" asp-action="Decline" asp-route-groupId="@Model.Group.Id">Decline</a>
+                <a class="dropdown-item text-danger" asp-controller="Groups" asp-action="Decline" asp-route-groupId="@Model.Id">Decline</a>
             </div>
         }
         else
         {
             <div class="row" style="margin: 5px;">
-                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Left" asp-route-groupId="@Model.Group.Id">Left</a>
+                <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Left" asp-route-groupId="@Model.Id">Left</a>
             </div>
         }
     </div>
@@ -50,7 +49,7 @@
             <div class="card-body">
                 <h4>Tell about something</h4>
                 <hr/>
-                <input name="GroupId" value="@Model.Group.Id" hidden/>
+                <input name="GroupId" value="@Model.Id" hidden/>
                 <input class="form-control bg-body text-white mb-3" name="Title" placeholder="Title"/>
                 <textarea class="form-control bg-body text-white mb-3" name="Description" placeholder="Description"></textarea>
                 <hr/>
@@ -80,49 +79,53 @@
         }
     </div>
 }
-<div class="card card-body">
-    <div class="text-center">
-        <h3>Users</h3>
-    </div>
-    @foreach (GroupUser groupUser in Model.Group.Users.OrderByDescending(user => user.UserStatus))
-    {
-        string username = groupUser.User!.UserName;
-        <div class="card mb-2" style="border: 3px solid dimgrey;">
-            <div class="card-body">
-                <h4>
-                    <a asp-controller="Account" asp-action="Profile" asp-route-username="@username">@username</a>
-                </h4>
-                <span class="badge rounded-pill bg-info">@groupUser.UserStatus</span>
-                @if (status != GroupUserStatus.User && groupUser.UserStatus == GroupUserStatus.User && !groupUser.IsAgreed)
-                {
-                    <hr/>
 
-                    <a class="btn btn-success" asp-controller="Groups" asp-action="Accept" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Accept</a>
-                    <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Decline" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Decline</a>
-                }
-                else if (status == GroupUserStatus.Founder && username != currentUserName)
-                {
-                    <hr/>
-
-                    <a class="dropdown-toggle btn btn-primary" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Promote</a>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" onclick="promote('@(groupUser.UserId)', '@(groupUser.GroupId)', 'User')">User</a>
-                        <a class="dropdown-item" onclick="promote('@(groupUser.UserId)', '@(groupUser.GroupId)', 'Admin')">Admin</a>
-                    </div>
-
-                    <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
-                }
-                else if (status == GroupUserStatus.Admin && groupUser.UserStatus == GroupUserStatus.User)
-                {
-                    <hr/>
-
-                    <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
-                }
-
-            </div>
+@if (user != null && user.IsAgreed)
+{
+    <div class="card card-body">
+        <div class="text-center">
+            <h3>Users</h3>
         </div>
-    }
-</div>
+        @foreach (GroupUser groupUser in Model.Users.OrderByDescending(user => user.UserStatus))
+        {
+            string username = groupUser.User!.UserName;
+            <div class="card mb-2" style="border: 3px solid dimgrey;">
+                <div class="card-body">
+                    <h4>
+                        <a asp-controller="Account" asp-action="Profile" asp-route-username="@username">@username</a>
+                    </h4>
+                    <span class="badge rounded-pill bg-info">@groupUser.UserStatus</span>
+                    @if (status != GroupUserStatus.User && groupUser.UserStatus == GroupUserStatus.User && !groupUser.IsAgreed)
+                    {
+                        <hr/>
+
+                        <a class="btn btn-success" asp-controller="Groups" asp-action="Accept" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Accept</a>
+                        <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Decline" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Decline</a>
+                    }
+                    else if (status == GroupUserStatus.Founder && username != currentUserName)
+                    {
+                        <hr/>
+
+                        <a class="dropdown-toggle btn btn-primary" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Promote</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" onclick="promote('@(groupUser.UserId)', '@(groupUser.GroupId)', 'User')">User</a>
+                            <a class="dropdown-item" onclick="promote('@(groupUser.UserId)', '@(groupUser.GroupId)', 'Admin')">Admin</a>
+                        </div>
+
+                        <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
+                    }
+                    else if (status == GroupUserStatus.Admin && groupUser.UserStatus == GroupUserStatus.User)
+                    {
+                        <hr/>
+
+                        <a class="btn btn-outline-danger" asp-controller="Groups" asp-action="Kick" asp-route-userid="@groupUser.UserId" asp-route-groupid="@groupUser.GroupId">Kick</a>
+                    }
+
+                </div>
+            </div>
+        }
+    </div>
+}
 <script>
     async function promote(userId, groupId, userStatus)
     {

@@ -4,7 +4,7 @@
 }
 
 <form method="post">
-    <div class="card border-3 col-md-4">
+    <div class="card border-3">
         <div class="card-header">
             <span style="font-size: 32px;"><b>Login</b></span>
             <br />
@@ -12,11 +12,11 @@
         </div>
         <div class="card-body">
             <div class="card-text mb-3">
-                <input class="form-control" style="font-size: 18px;" asp-for="Username" placeholder="Username" />
+                <input class="form-control text-white bg-body" style="font-size: 18px;" asp-for="Username" placeholder="Username" />
                 <span class="text-danger" asp-validation-for="Username"></span>
             </div>
             <div class="card-text mb-3">
-                <input class="form-control" style="font-size: 18px;" asp-for="Password" placeholder="Password" />
+                <input class="form-control text-white bg-body" style="font-size: 18px;" asp-for="Password" placeholder="Password" />
                 <span class="text-danger" asp-validation-for="Password"></span>
             </div>
             <div class="text-danger" asp-validation-summary="ModelOnly"></div>

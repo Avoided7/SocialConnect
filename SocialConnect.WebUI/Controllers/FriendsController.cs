@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.WebUI.Extenstions;
-using SocialConnect.WebUI.ViewModels;
-using SocialConnect.WebUI.ViewModels.Enums;
-using System.Linq.Expressions;
 using System.Security.Claims;
+using SocialConnect.WebUI.ViewModels;
 
 namespace SocialConnect.WebUI.Controllers
 {
@@ -15,18 +12,15 @@ namespace SocialConnect.WebUI.Controllers
     public class FriendsController : Controller
     {
         private readonly IFriendRepository _friendRepository;
-        private readonly IMapper _mapper;
 
-        public FriendsController(IFriendRepository friendRepository,
-                                 IMapper mapper)
+        public FriendsController(IFriendRepository friendRepository)
         {
             this._friendRepository = friendRepository;
-            this._mapper = mapper;
         }
         [HttpGet]
         public async Task<IActionResult> All(string type = "all")
         {
-            string? userId = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
+            string? userId = User.GetUserId();
 
             if (userId == null )
             {
@@ -64,15 +58,23 @@ namespace SocialConnect.WebUI.Controllers
 
             if(userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool accepted = await _friendRepository.AcceptAsync(friendId, userId);
 
             if(!accepted)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -84,15 +86,23 @@ namespace SocialConnect.WebUI.Controllers
 
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool accepted = await _friendRepository.DeclineAsync(friendId, userId);
 
             if (!accepted)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);
@@ -104,15 +114,23 @@ namespace SocialConnect.WebUI.Controllers
 
             if (userId == null)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "User error?!",
+                    Content = "Try re-login."
+                };
+                return View("Error", error);
             }
             bool deleted = await _friendRepository.DeleteAsync(userId, friendId);
 
             if (!deleted)
             {
-                // TODO: Replace 'Bad Request' with error page.
-                return BadRequest();
+                ErrorVM error = new()
+                {
+                    Title = "Error?!",
+                    Content = "Please, try later."
+                };
+                return View("Error", error);
             }
 
             return Redirect(Request.Headers["Referer"]);

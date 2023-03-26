@@ -2,6 +2,11 @@
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
     string? username = isAuthenticated ? User.Identity?.Name : null ?? "Undefined";
     string userId = User.GetUserId() ?? string.Empty;
+    AlertBoxVM? alertBox = Context.Session.GetJson<AlertBoxVM>("confirmation");
+    if (alertBox != null)
+    {
+        Context.Session.Remove("confirmation");
+    }
 }
 
 <!DOCTYPE html>
@@ -19,7 +24,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light navbar-dark border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index" style="margin-left: 150px;">SocialConnect.WebUI</a>
+                <a class="navbar-brand" asp-area="" asp-controller="News" asp-action="All" style="margin-left: 150px;">SocialConnect.WebUI</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -32,20 +37,18 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Groups">Groups</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Groups">Groups</a>
-                        </li>
                     </ul>
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item dropdown" style="margin-right: 150px;">
                             @if (isAuthenticated)
                             {
-                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@username</a>
+                                <a class="text-light dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;"><b>@username</b></a>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile </a>
                                     <a class="dropdown-item" asp-controller="News" asp-action="All">News </a>
                                     <a class="dropdown-item" asp-controller="Friends" asp-action="All">Friends <friends-request user-id="@userId" style="margin-top: -5px; width: 25px;" /></a>
                                     <a class="dropdown-item" asp-controller="Groups" asp-action="All">Groups <groups-request user-id="@userId" style="margin-top: -5px; width: 25px;" /></a>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Settings">Settings</a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Sign Out</a>
                                 </div>
@@ -63,7 +66,16 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
-            @RenderBody()
+            <div class="row">
+                <div class="offset-3 col-md-6">
+                    @if (alertBox != null)
+                    {
+                        @(await Html.PartialAsync("_AlertBox", alertBox))
+                    }
+                    
+                    @RenderBody()
+                </div>
+            </div>
         </main>
     </div>
 

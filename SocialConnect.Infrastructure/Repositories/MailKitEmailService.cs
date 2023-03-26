@@ -7,18 +7,18 @@ using SocialConnect.Shared.Models;
 
 namespace SocialConnect.Infrastructure.Repositories
 {
-    public class EmailRepository : IEmailService
+    public class MailKitEmailService : IMailKitEmailService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<EmailRepository> _logger;
+        private readonly ILogger<MailKitEmailService> _logger;
 
-        public EmailRepository(IConfiguration configuration,
-                            ILogger<EmailRepository> logger)
+        public MailKitEmailService(IConfiguration configuration,
+                            ILogger<MailKitEmailService> logger)
         {
             this._configuration = configuration;
             this._logger = logger;
         }
-        public async Task<bool> SendAsync(EmailMessage emailDto)
+        public async void SendAsync(EmailMessage emailDto)
         {
             try
             {         
@@ -39,13 +39,10 @@ namespace SocialConnect.Infrastructure.Repositories
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
                 }
-
-                return true;
             }
             catch(Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return false;
             }
         }
     }

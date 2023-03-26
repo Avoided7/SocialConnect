@@ -19,36 +19,52 @@ public class NewsRepository : INewsRepository
         _dbContext = dbContext;
         _logger = logger;
     }
-    public async Task<IEnumerable<News>> GetAsync()
+
+    #region GET
+
+    public Task<IQueryable<News>> GetAsync()
     {
-        return await _dbContext.News
-                                    .Include(news => news.User)
-                                    .Include(news => news.Likes)
-                                    .Include(news => news.Comments)
-                                    .ThenInclude(comment => comment.Likes)
-                                    .ToListAsync();
+        return Task.Run(() => _dbContext.News
+            .Include(news => news.User)
+            .Include(news => news.Group)
+            .Include(news => news.Likes)
+            .Include(news => news.Comments)
+                .ThenInclude(comment => comment.Likes)
+            .Include(news => news.Comments)
+                .ThenInclude(comment => comment.User)
+            .AsNoTracking());
     }
 
-    public async Task<IEnumerable<News>> GetAsync(Expression<Func<News, bool>> expression)
+    public Task<IQueryable<News>> GetAsync(Expression<Func<News, bool>> expression)
     {
-        return await _dbContext.News
-                                    .Where(expression)
-                                    .Include(news => news.User)
-                                    .Include(news => news.Likes)
-                                    .Include(news => news.Comments)
-                                    .ThenInclude(comment => comment.Likes)
-                                    .ToListAsync();
+        return Task.Run(() => _dbContext.News
+            .Include(news => news.User)
+            .Include(news => news.Group)
+            .Include(news => news.Likes)
+            .Include(news => news.Comments)
+                .ThenInclude(comment => comment.Likes)
+            .Include(news => news.Comments)
+            .ThenInclude(comment => comment.User)
+            .Where(expression)
+            .AsNoTracking());
     }
 
     public async Task<News?> FirstOrDefaultAsync(Expression<Func<News, bool>> expression)
     {
         return await _dbContext.News
-                                    .Include(news => news.User)
-                                    .Include(news => news.Likes)
-                                    .Include(news => news.Comments)
-                                    .ThenInclude(comment => comment.Likes)
-                                    .FirstOrDefaultAsync(expression);
+            .Include(news => news.User)
+            .Include(news => news.Group)
+            .Include(news => news.Likes)
+            .Include(news => news.Comments)
+                .ThenInclude(comment => comment.Likes)
+            .Include(news => news.Comments)
+                .ThenInclude(comment => comment.User)
+            .FirstOrDefaultAsync(expression);
     }
+
+    #endregion
+
+    #region CREATE
 
     public async Task<News?> CreateAsync(News entity)
     {
@@ -56,6 +72,10 @@ public class NewsRepository : INewsRepository
         await _dbContext.SaveChangesAsync();
         return entityEntry.Entity;
     }
+
+    #endregion
+
+    #region UPDATE
 
     public async Task<News?> UpdateAsync(string id, News entity)
     {
@@ -75,6 +95,10 @@ public class NewsRepository : INewsRepository
         return news;
     }
 
+    #endregion
+
+    #region DELETE
+
     public async Task<bool> DeleteAsync(string id)
     {
         News? news = await _dbContext.News.FirstOrDefaultAsync(news => news.Id == id);
@@ -83,12 +107,35 @@ public class NewsRepository : INewsRepository
             return false;
         }
 
+        IQueryable<Comment> comments = _dbContext.Comments.Where(comment => comment.NewsId == id);
+        IQueryable<CommentLike> commentLikes = _dbContext.CommentLikes.Where(like => comments.Any(comment => comment.Id == like.CommentId));
+        
+        IQueryable<NewsLike> newsLikes = _dbContext.NewsLikes.Where(like => like.NewsId == id);
+        
+        // Deleting relations
+        _dbContext.NewsLikes.RemoveRange(newsLikes);
+        _dbContext.CommentLikes.RemoveRange(commentLikes);
+        _dbContext.Comments.RemoveRange(comments);
+        
+        // Deleting main entity
         _dbContext.News.Remove(news);
+        
         await _dbContext.SaveChangesAsync();
 
         return true;
     }
 
+    public async Task<bool> RemoveRangeAsync(IEnumerable<News> news)
+    {
+        await Task.WhenAll(news.Select(currentNews => DeleteAsync(currentNews.Id)));
+
+        return true;
+    }
+    
+    #endregion
+
+    #region CUSTOM METHODS
+    
     public async Task<bool> LikeAsync(string userId, string newsId)
     {
         try
@@ -175,4 +222,6 @@ public class NewsRepository : INewsRepository
             return false;
         }
     }
+    
+    #endregion
 }

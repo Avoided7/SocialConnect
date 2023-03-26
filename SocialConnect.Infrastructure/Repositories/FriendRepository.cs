@@ -21,63 +21,56 @@ namespace SocialConnect.Infrastructure.Repositories
         }
         #region GET
 
-        public async Task<IEnumerable<FriendsCouple>> GetAsync()
+        public Task<IQueryable<FriendsCouple>> GetAsync()
         {
-            return await _dbContext.Friends.ToListAsync();
+            return Task.Run(() => _dbContext.Friends.AsNoTracking());
         }
 
-        public async Task<IEnumerable<FriendsCouple>> GetAsync(Expression<Func<FriendsCouple, bool>> expression)
+        public Task<IQueryable<FriendsCouple>> GetAsync(Expression<Func<FriendsCouple, bool>> expression)
         {
-            return await _dbContext.Friends.Where(expression).ToListAsync();
+            return Task.Run(() => _dbContext.Friends.AsNoTracking().Where(expression));
         }
 
-        public async Task<IEnumerable<User>> GetUserFriendsAsync(string userId)
+        public async Task<IQueryable<User>> GetUserFriendsAsync(string userId)
         {
             try
             {
-                User? user = await _dbContext.Users.Include(user => user.Friends)
-                                                   .FirstOrDefaultAsync(user => user.Id == userId);
-                if (user == null)
+                bool isUserExist = await _dbContext.SocialUsers.AnyAsync(user => user.Id == userId);
+                if (!isUserExist)
                 {
-                    return Enumerable.Empty<User>();
+                    return Enumerable.Empty<User>().AsQueryable();
                 };
-                IEnumerable<User> friends = _dbContext.Friends
+                IQueryable<User> friends = _dbContext.Friends
                                                             .Where(friend => (!friend.IsAgreed && (friend.FriendId == userId || friend.UserId == userId)) || 
                                                                                         (friend.IsAgreed && friend.FriendId == userId))
-                                                            .ToList()
-                                                            .Select(friend =>
-                                                            {
-                                                                string friendId = friend.FriendId == userId ? friend.UserId : friend.FriendId;
-                                                                return _dbContext.Users.First(user => user.Id == friendId);
-                                                            });
+                                                            .Select(friend => _dbContext.SocialUsers.First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)));
                 return friends;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return Enumerable.Empty<User>();
+                return Enumerable.Empty<User>().AsQueryable();
             }
         }
-        public async Task<IEnumerable<User>> GetUserFriendsAsync(string userId,
+        public async Task<IQueryable<User>> GetUserFriendsAsync(string userId,
                                                                  Expression<Func<FriendsCouple, bool>> expression)
         {
             try
             {
-                User? user = await _dbContext.Users.Include(user => user.Friends)
-                                                   .FirstOrDefaultAsync(user => user.Id == userId);
-                if (user == null)
+                bool isUserExist = await _dbContext.Users.AnyAsync(user => user.Id == userId);
+                if (!isUserExist)
                 {
-                    return Enumerable.Empty<User>();
+                    return Enumerable.Empty<User>().AsQueryable();
                 }
-                IEnumerable<User> friends = _dbContext.Friends.Where(expression)
-                                                              .Select(friend => _dbContext.Users.Include(user => user.Friends)
-                                                                                                .First(user => user.Id == friend.FriendId || user.Id == friend.UserId));
+                IQueryable<User> friends = _dbContext.Friends.Where(expression)
+                                                              .Select(friend => _dbContext.SocialUsers.Include(user => user.Friends)
+                                                                                                                .First(user => user.Id == friend.FriendId || user.Id == friend.UserId));
                 return friends;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return Enumerable.Empty<User>();
+                return Enumerable.Empty<User>().AsQueryable();
             }
         }
 
@@ -97,9 +90,9 @@ namespace SocialConnect.Infrastructure.Repositories
                 return null;
             }
 
-            EntityEntry<FriendsCouple> createdCouple = await _dbContext.AddAsync(entity);
+            await _dbContext.Friends.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
-            return createdCouple.Entity;
+            return entity;
         }
 
         #endregion
@@ -153,7 +146,7 @@ namespace SocialConnect.Infrastructure.Repositories
             await DeleteAsync(friendCouple.Id);
 
             FriendsCouple? exFriend = await _dbContext.Friends.FirstOrDefaultAsync(friend => friend.UserId == friendId &&
-                                                                                             friend.FriendId == userId);
+                                                                                                       friend.FriendId == userId);
 
             if (exFriend == null)
             {

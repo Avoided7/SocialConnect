@@ -8,112 +8,27 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialConnect.Domain.Entities.Constants;
 using Microsoft.Extensions.Logging;
+using SocialConnect.Infrastructure.Data;
 
 namespace SocialConnect.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly IEmailService _emailService;
         private readonly ILogger<UserRepository> _logger;
-        private readonly IUrlHelper _urlHelper;
+        private readonly SocialDbContext _dbContext;
 
-        public UserRepository(UserManager<User> userManager,
-                              SignInManager<User> signInManager,
-                              IEmailService emailService,
-                              ILogger<UserRepository> logger,
-                              IUrlHelper urlHelper)
-        { 
-            this._userManager = userManager;
-            this._signInManager = signInManager;
-            this._emailService = emailService;
+        public UserRepository(ILogger<UserRepository> logger,
+                              SocialDbContext dbContext)
+        {
             this._logger = logger;
-            this._urlHelper = urlHelper;
+            _dbContext = dbContext;
         }
 
-        public async Task<User?> FindByIdAsync(string id)
+        #region GET
+
+        public Task<IQueryable<User>> GetAsync()
         {
-            User? user = await FirstOrDefaultAsync(user => user.Id == id);
-
-            return user;
-        }
-
-        public async Task<User?> FindByUsernameAsync(string username)
-        {
-            User? user = await FirstOrDefaultAsync(user => user.UserName == username);
-
-            return user;
-        }
-        
-        public async Task<bool> LoginAsync(string login, string password)
-        {
-            SignInResult signResult = await _signInManager.PasswordSignInAsync(login, password, true, true);
-
-            return signResult.Succeeded;
-        }
-
-        public async Task<bool> RegisterAsync(User user, string password)
-        {
-            IdentityResult createdUser = await _userManager.CreateAsync(user, password);
-            if(!createdUser.Succeeded)
-            {
-                return false;
-            }
-            string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            string url = _urlHelper.Link("default", new { controller = "Account", action = "Confirmation", userid = user.Id, token = token });
-            EmailMessage emailDto = new EmailMessage()
-            {
-                Subject = "Confirm email",
-                Content = $"<h1>Confirm email</h1> <a href='{url}'>Click here to confirm email</a>",
-                Reciever = user.Email
-            };
-            await _emailService.SendAsync(emailDto);
-
-            return true;
-        }
-
-        public async Task<bool> DeleteAsync(string id)
-        {
-            User user = await _userManager.FindByIdAsync(id);
-            IdentityResult result = await _userManager.DeleteAsync(user);
-            return result.Succeeded;
-        }
-
-        public async Task<bool> ConfirmAsync(string userId, string token)
-        {
-            User? user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null) { return false; }
-
-            IdentityResult confirmResult = await _userManager.ConfirmEmailAsync(user, token);
-
-            if (confirmResult.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(user, UserConstant.USER);
-            }
-
-            return confirmResult.Succeeded;
-
-        }
-
-        public async Task<bool> LogoutAsync()
-        {
-            try
-            {
-                await _signInManager.SignOutAsync();
-                return true;
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
-        }
-
-        public async Task<IEnumerable<User>> GetAsync()
-        {
-            return await _userManager.Users.AsNoTracking()
+            return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
@@ -122,12 +37,12 @@ namespace SocialConnect.Infrastructure.Repositories
                                                     .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
                                                 .ThenInclude(groupUser => groupUser.Group)
-                                           .ToListAsync();
+                                           .AsNoTracking());
         }
 
-        public async Task<IEnumerable<User>> GetAsync(Expression<Func<User, bool>> expression)
+        public Task<IQueryable<User>> GetAsync(Expression<Func<User, bool>> expression)
         {
-            return await _userManager.Users.AsNoTracking()
+            return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
@@ -136,13 +51,13 @@ namespace SocialConnect.Infrastructure.Repositories
                                                     .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
                                                 .ThenInclude(groupUser => groupUser.Group)
-                                           .Where(expression)
-                                           .ToListAsync();
+                                           .AsNoTracking()
+                                           .Where(expression));
         }
 
         public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> expression)
         {
-            return await _userManager.Users.AsNoTracking()
+            return await _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
@@ -154,21 +69,24 @@ namespace SocialConnect.Infrastructure.Repositories
                                            .FirstOrDefaultAsync(expression);
         }
 
+        #endregion
+
+        #region CREATE
+
         public async Task<User?> CreateAsync(User entity)
         {
-            IdentityResult createResult = await _userManager.CreateAsync(entity);
-
-            if(!createResult.Succeeded)
-            {
-                return null;
-            }
-
-            return await _userManager.FindByEmailAsync(entity.Email);
+            await _dbContext.SocialUsers.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
+
+        #endregion
+
+        #region UPDATE
 
         public async Task<User?> UpdateAsync(string id, User entity)
         {
-            User? user = await _userManager.FindByIdAsync(id);
+            User? user = await _dbContext.SocialUsers.FirstOrDefaultAsync(user => user.Id == id);
 
             if(user == null)
             {
@@ -182,19 +100,53 @@ namespace SocialConnect.Infrastructure.Repositories
             user.DateOfBirth = entity.DateOfBirth;
             user.Gender = entity.Gender;
 
-            IdentityResult updateResult = await _userManager.UpdateAsync(user);
-
-            if(!updateResult.Succeeded)
-            {
-                return null;
-            }
+            _dbContext.SocialUsers.Update(user);
+            await _dbContext.SaveChangesAsync();
 
             return user;
         }
 
+
+        #endregion
+
+        #region DELETE
+
+        public async Task<bool> DeleteAsync(string id)
+        {
+            User? user = await _dbContext.SocialUsers.FirstOrDefaultAsync(user => user.Id == id);
+
+            if (user == null)
+            {
+                return false;
+            }
+            
+            _dbContext.SocialUsers.Remove(user);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
         public async Task<bool> DeleteAsync(User entity)
         {
             return await DeleteAsync(entity.Id);
         }
+
+        #endregion
+
+        #region CUSTOM METHODS
+        
+        public async Task<User?> FindByIdAsync(string id)
+        {
+            User? user = await FirstOrDefaultAsync(user => user.Id == id);
+
+            return user;
+        }
+
+        public async Task<User?> FindByUsernameAsync(string username)
+        {
+            User? user = await FirstOrDefaultAsync(user => user.UserName == username);
+
+            return user;
+        }
+
+        #endregion
     }
 }

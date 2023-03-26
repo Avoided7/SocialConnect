@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialConnect.Domain.Entities;
@@ -33,33 +34,35 @@ public class NewsController : Controller
         string? userId = User.GetUserId();
         if (userId == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "User error?!",
+                Content = "Try re-login."
+            };
+            return View("Error", error);
         }
 
         User? user = await _userRepository.FirstOrDefaultAsync(user => user.Id == userId);
 
         if (user == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "User error?!",
+                Content = "Try re-login."
+            };
+            return View("Error", error);
         }
 
-        IEnumerable<string> friends = user.Friends.Select(friend => friend.FriendId).Concat(new [] { userId });
+        IEnumerable<string> friends = user.Friends.Select(friend => friend.FriendId)
+                                                  .Concat(new [] { userId });
+        
         IEnumerable<string> groups = user.Groups.Where(group => group.IsAgreed)
                                                 .Select(group => group.GroupId!);
         
         IEnumerable<News> news = await _newsRepository.GetNewsFromUsersNGroupsAsync(friends, groups);
-        IEnumerable<string> groupsWithNews = news.Where(news => news.GroupId != null).Select(news => news.GroupId).Distinct();
-        IEnumerable<Group> allGroups = await _groupRepository.GetAsync(group => groupsWithNews.Contains(group.Id));
 
-        NewsWithGroupsVM newsWithGroups = new()
-        {
-            News = news,
-            Groups = allGroups
-        };
-        
-        return View(newsWithGroups);
+        return View(news);
     }
 
     [HttpPost]
@@ -73,8 +76,12 @@ public class NewsController : Controller
         string? userId = User.GetUserId();
         if (userId == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "User error?!",
+                Content = "Try re-login."
+            };
+            return View("Error", error);
         }
         News news = _mapper.Map<News>(newsVm);
         news.UserId = userId;
@@ -82,8 +89,12 @@ public class NewsController : Controller
         News? createdNews = await _newsRepository.CreateAsync(news);
         if (createdNews == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "Creating error?!",
+                Content = "Try create later."
+            };
+            return View("Error", error);
         }
 
         return Redirect(Request.Headers["Referer"]);
@@ -95,16 +106,13 @@ public class NewsController : Controller
         News? news = await _newsRepository.FirstOrDefaultAsync(news => news.Id == id);
         if (news == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "User error?!",
+                Content = "Try re-login."
+            };
+            return View("Error", error);
         }
-
-        IEnumerable<User> users = await Task.WhenAll(news.Comments.Select(async comment => (await _userRepository.FindByIdAsync(comment.UserId))!));
-        if (!news.IsUserNews)
-        {
-            ViewData["GroupName"] = (await _groupRepository.FirstOrDefaultAsync(group => group.Id == news.GroupId))?.Name;
-        }
-        ViewData["Comments"] = users;
         return View(news);
     }
 
@@ -114,15 +122,23 @@ public class NewsController : Controller
         string? userId = User.GetUserId();
         if (userId == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "User error?!",
+                Content = "Try re-login."
+            };
+            return View("Error", error);
         }
 
         bool isLiked = await _newsRepository.LikeAsync(userId, id);
         if (!isLiked)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "Error?!",
+                Content = "Please, try later."
+            };
+            return View("Error", error);
         }
 
         return Redirect(Request.Headers["Referer"]);
@@ -134,16 +150,24 @@ public class NewsController : Controller
         string? userId = User.GetUserId();
         if (userId == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "User error?!",
+                Content = "Try re-login."
+            };
+            return View("Error", error);
         }
 
         bool isCommented = await _newsRepository.CommentAsync(userId, id, content);
 
         if (!isCommented)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "Error?!",
+                Content = "Please, try later."
+            };
+            return View("Error", error);
         }
 
         return Redirect(Request.Headers["Referer"]);
@@ -155,16 +179,24 @@ public class NewsController : Controller
         string? userId = User.GetUserId();
         if (userId == null)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "User error?!",
+                Content = "Try re-login."
+            };
+            return View("Error", error);
         }
 
         bool isLiked = await _newsRepository.LikeCommentAsync(userId, id);
 
         if (!isLiked)
         {
-            // TODO: Replace 'Bad Request' with error page/message.
-            return BadRequest();
+            ErrorVM error = new()
+            {
+                Title = "Error?!",
+                Content = "Please, try later."
+            };
+            return View("Error", error);
         }
 
         return Redirect(Request.Headers["Referer"]);

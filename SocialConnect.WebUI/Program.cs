@@ -4,7 +4,6 @@ using SocialConnect.Infrastructure.Data;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using SocialConnect.Infrastructure.Repositories;
@@ -19,7 +18,7 @@ string connectionString = builder.Configuration.GetConnectionString("SocialDbCon
 builder.Services.AddDbContext<SocialDbContext>(context => context.UseSqlServer(connectionString));
 
 // Identity
-builder.Services.AddDefaultIdentity<User>(options =>
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
                 {
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequiredLength = 8;
@@ -30,7 +29,7 @@ builder.Services.AddDefaultIdentity<User>(options =>
 
                     options.User.RequireUniqueEmail = true;
 
-                    options.SignIn.RequireConfirmedEmail = true;
+                    options.SignIn.RequireConfirmedEmail = false;
                 })
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<SocialDbContext>();
@@ -38,6 +37,10 @@ builder.Services.AddDefaultIdentity<User>(options =>
 // Authentication & Authorization
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
+
+// Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -50,12 +53,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>()
     .AddScoped(x => x.GetRequiredService<IUrlHelperFactory>()
         .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext!));
 
-builder.Services.AddSingleton<IEmailService, EmailRepository>();
+builder.Services.AddSingleton<IMailKitEmailService, MailKitEmailService>();
 
 
 // Automapper
@@ -71,10 +75,13 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseSession();
+
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}");
+    pattern: "{controller=News}/{action=All}");
 
-SeedDB.SeedRoles(app);
+app.SeedRoles();
 
 app.Run();

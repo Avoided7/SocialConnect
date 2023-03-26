@@ -1,0 +1,32 @@
+﻿@model IdentityUser
+
+@{
+    ViewData["Title"] = "Settings";
+}
+<h3 class="text-center">Settings</h3>
+
+<div class="card">
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label" asp-for="UserName"></label>
+            <input class="form-control bg-body text-light" asp-for="UserName" disabled/>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" asp-for="Email"></label>
+            <input class="form-control bg-body text-light" asp-for="Email" disabled/>
+        </div>
+        <div class="mb-3">
+            Email confirmed:
+
+            @if (Model.EmailConfirmed)
+            {
+                <i class="text-success bi bi-check-lg"></i>
+            }
+            else
+            {
+                <i class="text-danger bi bi-x-lg"></i>
+                <a asp-action="ResendConfirmationLetter">Resend confirmation letter</a>
+            }
+        </div>
+    </div>
+</div>

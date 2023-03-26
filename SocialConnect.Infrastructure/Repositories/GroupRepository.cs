@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Enums;
@@ -12,13 +13,86 @@ namespace SocialConnect.Infrastructure.Repositories
     {
         private readonly SocialDbContext _dbContext;
         private readonly ILogger<GroupRepository> _logger;
+        private readonly INewsRepository _newsRepository;
 
         public GroupRepository(SocialDbContext dbContext,
-                               ILogger<GroupRepository> logger)
+                               ILogger<GroupRepository> logger,
+                               INewsRepository newsRepository)
         {
             this._dbContext = dbContext;
             this._logger = logger;
+            this._newsRepository = newsRepository;
         }
+
+        #region GET
+
+        public async Task<Group?> FirstOrDefaultAsync(Expression<Func<Group, bool>> expression)
+        {
+            try
+            {
+                return await _dbContext.Groups
+                    .Include(group => group.Users)
+                        .ThenInclude(groupUser => groupUser.User)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Comments)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Likes)
+                    .FirstOrDefaultAsync(expression);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        public Task<IQueryable<Group>> GetAsync()
+        {
+            try
+            {
+                return Task.Run(() => _dbContext.Groups
+                    .Include(group => group.Users)
+                        .ThenInclude(groupUser => groupUser.User)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Comments)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Likes)
+                    .AsNoTracking());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Task.Run(() => Enumerable.Empty<Group>().AsQueryable());
+            }
+        }
+
+        public Task<IQueryable<Group>> GetAsync(Expression<Func<Group, bool>> expression)
+        {
+            try
+            {
+                return Task.Run(() => _dbContext.Groups
+                    .Include(group => group.Users)
+                        .ThenInclude(groupUser => groupUser.User)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Comments)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Likes)
+                    .AsNoTracking()
+                    .Where(expression));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Task.Run(() => Enumerable.Empty<Group>().AsQueryable());
+            }
+        }
+
+        #endregion
+
+        #region CREATE
+
         public async Task<Group?> CreateAsync(Group entity)
         {
             try
@@ -41,6 +115,10 @@ namespace SocialConnect.Infrastructure.Repositories
             }
         }
 
+        #endregion
+
+        #region DELETE
+
         public async Task<bool> DeleteAsync(string id)
         {
             try
@@ -51,8 +129,12 @@ namespace SocialConnect.Infrastructure.Repositories
                     return false;
                 }
 
+                IEnumerable<News> groupNews = _dbContext.News.Where(news => news.GroupId == group.Id);
+                await _newsRepository.RemoveRangeAsync(groupNews);
+                
                 IEnumerable<GroupUser> groupUsers = _dbContext.GroupUsers.Where(groupUsers => groupUsers.GroupId == group.Id);
                 _dbContext.GroupUsers.RemoveRange(groupUsers);
+                
                 _dbContext.Groups.Remove(group);
                 await _dbContext.SaveChangesAsync();
 
@@ -65,56 +147,10 @@ namespace SocialConnect.Infrastructure.Repositories
             }
         }
 
-        public async Task<Group?> FirstOrDefaultAsync(Expression<Func<Group, bool>> expression)
-        {
-            try
-            {
-                return await _dbContext.Groups
-                                              .Include(group => group.Users)
-                                              .ThenInclude(groupUser => groupUser.User)
-                                              .FirstOrDefaultAsync(expression);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return null;
-            }
-        }
 
-        public async Task<IEnumerable<Group>> GetAsync()
-        {
-            try
-            {
-                return await _dbContext.Groups
-                                              .Include(group => group.Users)
-                                              .ThenInclude(groupUser => groupUser.User)
-                                              .ToListAsync();
-                                              
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return Enumerable.Empty<Group>();
-            }
-        }
+        #endregion
 
-        public async Task<IEnumerable<Group>> GetAsync(Expression<Func<Group, bool>> expression)
-        {
-            try
-            {
-                return await _dbContext.Groups
-                                              .Include(group => group.Users)
-                                              .ThenInclude(groupUser => groupUser.User)
-                                              .Where(expression)
-                                              .ToListAsync();
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return Enumerable.Empty<Group>() ;
-            }
-        }
+        #region UPDATE
 
         public async Task<Group?> UpdateAsync(string id, Group entity)
         {
@@ -140,6 +176,11 @@ namespace SocialConnect.Infrastructure.Repositories
             }
         }
 
+
+        #endregion
+
+        #region CUSTOM METHODS
+        
         public async Task<bool> JoinUserAsync(string groupId, string userId)
         {
             try
@@ -316,12 +357,12 @@ namespace SocialConnect.Infrastructure.Repositories
             }
         }
 
-        public async Task<bool> DeclineRequestAsync(string currentUserID, string userId, string groupId)
+        public async Task<bool> DeclineRequestAsync(string currentUserId, string userId, string groupId)
         {
             try
             {
                 GroupUser? currentUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser =>
-                    groupUser.UserId == currentUserID && groupUser.GroupId == groupId);
+                    groupUser.UserId == currentUserId && groupUser.GroupId == groupId);
                 if (currentUser == null || currentUser.UserStatus == GroupUserStatus.User)
                 {
                     return false;
@@ -386,5 +427,7 @@ namespace SocialConnect.Infrastructure.Repositories
                 return false;
             }
         }
+        
+        #endregion
     }
 }

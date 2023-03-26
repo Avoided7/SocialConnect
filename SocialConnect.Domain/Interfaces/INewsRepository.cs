@@ -10,4 +10,6 @@ public interface INewsRepository : IRepository<News>
     Task<bool> CommentAsync(string userId, string newsId, string content);
 
     Task<bool> LikeCommentAsync(string userId, string commentId);
+
+    Task<bool> RemoveRangeAsync(IEnumerable<News> news);
 }
