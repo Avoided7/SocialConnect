@@ -1,8 +1,8 @@
+using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Infrastructure.Data;
 using SocialConnect.Domain.Interfaces;
-using SocialConnect.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -53,7 +53,10 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IBlobService, BlobService>();
+
+string blobConnectionString = builder.Configuration.GetConnectionString("BlobConnectionString");
+builder.Services.AddSingleton(new BlobServiceClient(blobConnectionString));
 
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>()
     .AddScoped(x => x.GetRequiredService<IUrlHelperFactory>()

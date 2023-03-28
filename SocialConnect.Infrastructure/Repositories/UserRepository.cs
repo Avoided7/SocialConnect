@@ -31,6 +31,8 @@ namespace SocialConnect.Infrastructure.Repositories
             return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
+                                                .ThenInclude(news => news.Contents)
+                                           .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Comments)
@@ -44,6 +46,8 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Contents)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
                                            .Include(user => user.News)
@@ -59,6 +63,8 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             return await _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Contents)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Likes)
                                            .Include(user => user.News)

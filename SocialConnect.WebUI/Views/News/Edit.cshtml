@@ -1,0 +1,15 @@
+﻿@model NewsVM
+
+@{
+    ViewData["Title"] = "Edit news";
+}
+
+<form method="post" asp-route-id="@Context.Request.Query["id"]">
+    <div class="card">
+        <div class="card-body">
+        <input class="form-control bg-body text-white" asp-for="Description" placeholder="@nameof(Model.Description)"/>
+        <hr/>
+        <button class="btn btn-success">Edit</button>
+        </div>
+    </div>
+</form>

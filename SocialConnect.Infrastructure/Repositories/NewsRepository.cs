@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,7 @@ public class NewsRepository : INewsRepository
             .Include(news => news.User)
             .Include(news => news.Group)
             .Include(news => news.Likes)
+            .Include(news => news.Contents)
             .Include(news => news.Comments)
                 .ThenInclude(comment => comment.Likes)
             .Include(news => news.Comments)
@@ -41,10 +43,11 @@ public class NewsRepository : INewsRepository
             .Include(news => news.User)
             .Include(news => news.Group)
             .Include(news => news.Likes)
+            .Include(news => news.Contents)
             .Include(news => news.Comments)
                 .ThenInclude(comment => comment.Likes)
             .Include(news => news.Comments)
-            .ThenInclude(comment => comment.User)
+                .ThenInclude(comment => comment.User)
             .Where(expression)
             .AsNoTracking());
     }
@@ -55,6 +58,7 @@ public class NewsRepository : INewsRepository
             .Include(news => news.User)
             .Include(news => news.Group)
             .Include(news => news.Likes)
+            .Include(news => news.Contents)
             .Include(news => news.Comments)
                 .ThenInclude(comment => comment.Likes)
             .Include(news => news.Comments)
@@ -68,6 +72,7 @@ public class NewsRepository : INewsRepository
 
     public async Task<News?> CreateAsync(News entity)
     {
+        _dbContext.AddRange(entity.Contents);
         EntityEntry<News> entityEntry = await _dbContext.News.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
         return entityEntry.Entity;
@@ -79,16 +84,17 @@ public class NewsRepository : INewsRepository
 
     public async Task<News?> UpdateAsync(string id, News entity)
     {
-        News? news = await _dbContext.News.FirstOrDefaultAsync(news => news.Id == id);
+        News? news = await _dbContext.News.Include(news => news.Contents)
+                                          .FirstOrDefaultAsync(news => news.Id == id);
 
         if (news == null)
         {
             return null;
         }
 
-        news.Title = entity.Title;
-        news.Description = entity.Description;
-
+        _dbContext.NewsContents.RemoveRange(news.Contents);
+        _dbContext.NewsContents.AddRange(entity.Contents);
+        
         _dbContext.News.Update(news);
         await _dbContext.SaveChangesAsync();
         
@@ -101,12 +107,15 @@ public class NewsRepository : INewsRepository
 
     public async Task<bool> DeleteAsync(string id)
     {
-        News? news = await _dbContext.News.FirstOrDefaultAsync(news => news.Id == id);
+        News? news = await _dbContext.News.Include(news => news.Contents)
+                                          .FirstOrDefaultAsync(news => news.Id == id);
         if (news == null)
         {
             return false;
         }
 
+        IEnumerable<NewsContent> newsContents = news.Contents;
+        
         IQueryable<Comment> comments = _dbContext.Comments.Where(comment => comment.NewsId == id);
         IQueryable<CommentLike> commentLikes = _dbContext.CommentLikes.Where(like => comments.Any(comment => comment.Id == like.CommentId));
         
@@ -116,6 +125,7 @@ public class NewsRepository : INewsRepository
         _dbContext.NewsLikes.RemoveRange(newsLikes);
         _dbContext.CommentLikes.RemoveRange(commentLikes);
         _dbContext.Comments.RemoveRange(comments);
+        _dbContext.NewsContents.RemoveRange(newsContents);
         
         // Deleting main entity
         _dbContext.News.Remove(news);

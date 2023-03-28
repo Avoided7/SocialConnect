@@ -14,6 +14,7 @@ namespace SocialConnect.Infrastructure.Data
         public DbSet<CommentLike> CommentLikes { get; set; } = null!;
         public DbSet<NewsLike> NewsLikes { get; set; } = null!;
         public DbSet<User> SocialUsers { get; set; } = null!;
+        public DbSet<NewsContent> NewsContents { get; set; } = null!;
         public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options)
         { }
 

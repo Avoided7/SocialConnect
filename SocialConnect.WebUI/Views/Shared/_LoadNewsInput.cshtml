@@ -1,0 +1,56 @@
+﻿<style>
+    .bi-image:hover, .bi-x-lg:hover
+    {
+        cursor: pointer;
+    }
+</style>
+
+<div class="card mb-3">
+    <div class="card-header text-center" id="preview" hidden>
+    </div>
+    <div class="card-body">
+        <h4>Tell something about your day!</h4>
+        <hr/>
+        <textarea class="form-control bg-body text-white mb-2" name="description" placeholder="Description" style="max-height: 200px;"></textarea>
+        <i class="bi bi-image" onclick="openWindow()" style="font-size: 20px;border: 1px grey solid; padding: 2px;"></i>
+        <i class="bi bi-x-lg" id="clearBtn" onclick="clearInput()" style="font-size: 20px; border: 1px grey solid; padding: 2px;" hidden></i>
+        <input name="image" id="imgUpload" type="file" accept="image/*" onchange="getPreview()" hidden/>
+        <hr/>
+        <button class="btn btn-success">CREATE</button>
+    </div>
+</div>
+
+<script>            
+    function openWindow()
+    {
+        $("#imgUpload").click();
+    }
+    
+    function getPreview()
+    {
+        const clearPhoto = document.getElementById("clearBtn");
+        const photo = document.getElementById("imgUpload").files[0];
+        const previewBox = document.getElementById("preview");
+        const fileReader = new FileReader();
+        fileReader.readAsDataURL(photo);
+        fileReader.addEventListener("load", function ()
+        {
+            previewBox.hidden = false;
+            previewBox.innerHTML = "<img src='" + this.result + "' alt='photo' style='width: 100%; height: auto; border: 3px solid black;'/>";
+        });
+        
+        clearPhoto.hidden = false;
+    }
+        
+    function clearInput()
+    {
+        document.getElementById("imgUpload").value=null;
+        
+        const clearPhoto = document.getElementById("clearBtn");
+        clearPhoto.hidden = true;
+        
+        const previewBox = document.getElementById("preview");
+        previewBox.innerHTML = "";
+        previewBox.hidden = true;
+    }
+</script>

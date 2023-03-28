@@ -44,38 +44,21 @@
 
 @if (status != GroupUserStatus.User)
 {
-    <form method="post" asp-controller="News" asp-action="Create">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h4>Tell about something</h4>
-                <hr/>
-                <input name="GroupId" value="@Model.Id" hidden/>
-                <input class="form-control bg-body text-white mb-3" name="Title" placeholder="Title"/>
-                <textarea class="form-control bg-body text-white mb-3" name="Description" placeholder="Description"></textarea>
-                <hr/>
-                <input class="btn btn-success" type="submit" value="Create"/>
-            </div>
-        </div>
+    <form method="post" asp-controller="News" asp-action="Create" enctype="multipart/form-data" asp-route-groupId="@Model.Id">
+        @(await Html.PartialAsync("_LoadNewsInput"))
     </form>
 }
 
 @if (Model.News.Any())
 {
-    <div class="card card-body mb-3">
+    <div class="card card-body bg-dark bg-opacity-50 mb-3">
         <div class="text-center">
             <h3>News</h3>
         </div>
 
         @foreach (News news in Model.News)
         {
-            <div class="card" style="border: 3px solid dimgrey;">
-                <div class="card-body mb-3">
-                    <h4>@news.Title</h4>
-                    <hr/>
-                    <p>@news.Description</p>
-                    @(await Html.PartialAsync("_NewsFooter", news))
-                </div>
-            </div>
+            @(await Html.PartialAsync("_LoadNews", news))
         }
     </div>
 }

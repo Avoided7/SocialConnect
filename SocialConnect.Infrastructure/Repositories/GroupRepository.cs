@@ -34,6 +34,8 @@ namespace SocialConnect.Infrastructure.Repositories
                     .Include(group => group.Users)
                         .ThenInclude(groupUser => groupUser.User)
                     .Include(group => group.News)
+                        .ThenInclude(news => news.Contents)
+                    .Include(group => group.News)
                         .ThenInclude(news => news.Comments)
                     .Include(group => group.News)
                         .ThenInclude(news => news.Likes)
@@ -53,6 +55,8 @@ namespace SocialConnect.Infrastructure.Repositories
                 return Task.Run(() => _dbContext.Groups
                     .Include(group => group.Users)
                         .ThenInclude(groupUser => groupUser.User)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Contents)
                     .Include(group => group.News)
                         .ThenInclude(news => news.Comments)
                     .Include(group => group.News)
@@ -74,6 +78,8 @@ namespace SocialConnect.Infrastructure.Repositories
                 return Task.Run(() => _dbContext.Groups
                     .Include(group => group.Users)
                         .ThenInclude(groupUser => groupUser.User)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Contents)
                     .Include(group => group.News)
                         .ThenInclude(news => news.Comments)
                     .Include(group => group.News)

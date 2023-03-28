@@ -1,0 +1,16 @@
+﻿@model News
+
+@{
+    var images = Model.Contents.Where(content => content.Type == NewsContentType.Image).ToList();
+}
+
+@if(images.Any())
+{
+    <hr/>
+    <div class="text-center mb-3">
+        @foreach (NewsContent image in images)
+        {
+            <img class="bg-light" src="https://avoided.blob.core.windows.net/@image.Content" style="width: 100%;" alt="img"/>
+        }
+    </div>
+}
