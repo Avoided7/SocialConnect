@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using SocialConnect.Domain.Entities;
+using SocialConnect.Domain.Enums;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Infrastructure.Data;
 
@@ -28,6 +29,7 @@ public class NewsRepository : INewsRepository
         return Task.Run(() => _dbContext.News
             .Include(news => news.User)
             .Include(news => news.Group)
+                .ThenInclude(group => group == null ? default : group.Users)
             .Include(news => news.Likes)
             .Include(news => news.Contents)
             .Include(news => news.Comments)
@@ -42,6 +44,7 @@ public class NewsRepository : INewsRepository
         return Task.Run(() => _dbContext.News
             .Include(news => news.User)
             .Include(news => news.Group)
+                .ThenInclude(group => group == null ? default : group.Users)
             .Include(news => news.Likes)
             .Include(news => news.Contents)
             .Include(news => news.Comments)
@@ -57,6 +60,7 @@ public class NewsRepository : INewsRepository
         return await _dbContext.News
             .Include(news => news.User)
             .Include(news => news.Group)
+                .ThenInclude(group => group == null ? default : group.Users)
             .Include(news => news.Likes)
             .Include(news => news.Contents)
             .Include(news => news.Comments)
@@ -86,16 +90,26 @@ public class NewsRepository : INewsRepository
     {
         News? news = await _dbContext.News.Include(news => news.Contents)
                                           .FirstOrDefaultAsync(news => news.Id == id);
-
+        
         if (news == null)
         {
             return null;
         }
 
-        _dbContext.NewsContents.RemoveRange(news.Contents);
-        _dbContext.NewsContents.AddRange(entity.Contents);
-        
-        _dbContext.News.Update(news);
+        // I don't wanna update all content, only text.
+
+        NewsContent? oldTextContent = news.Contents.FirstOrDefault(content => content.Type == NewsContentType.Text);
+        if (oldTextContent != null)
+        {
+            _dbContext.NewsContents.Remove(oldTextContent);
+        }
+
+        NewsContent? newTextContent = entity.Contents.FirstOrDefault(content => content.Type == NewsContentType.Text);
+        if (newTextContent != null)
+        {
+            await _dbContext.NewsContents.AddAsync(newTextContent);
+        }
+
         await _dbContext.SaveChangesAsync();
         
         return news;

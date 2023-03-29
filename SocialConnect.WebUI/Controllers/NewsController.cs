@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Enums;
@@ -16,21 +15,15 @@ public class NewsController : Controller
 {
     private readonly INewsRepository _newsRepository;
     private readonly IUserRepository _userRepository;
-    private readonly IGroupRepository _groupRepository;
     private readonly IBlobService _blobService;
-    private readonly IMapper _mapper;
 
     public NewsController(INewsRepository newsRepository,
                           IUserRepository userRepository,
-                          IGroupRepository groupRepository,
-                          IBlobService blobService,
-                          IMapper mapper)
+                          IBlobService blobService)
     {
         _newsRepository = newsRepository;
         _userRepository = userRepository;
-        _groupRepository = groupRepository;
         _blobService = blobService;
-        _mapper = mapper;
     }
     [HttpGet]
     public async Task<IActionResult> All()
@@ -87,7 +80,7 @@ public class NewsController : Controller
         {
             return View(nameof(All));
         }
-        
+
         News news = new() { GroupId = newsVm.GroupId };
         
         List<NewsContent> content = new List<NewsContent> { new NewsContent { Content = newsVm.Description, NewsId = news.Id, Type = NewsContentType.Text }};
@@ -222,8 +215,14 @@ public class NewsController : Controller
             return GetUserIdError();
         }
 
-        News? news = await _newsRepository.FirstOrDefaultAsync(news => news.Id == id);
+        // If don't have right to edit/delete return Error View.
+        bool hasRights = await _newsRepository.HasEditingRightsAsync(id, userId);
+        if (!hasRights)
+        {
+            return GetDontHaveRightsError();
+        }
         
+        News? news = await _newsRepository.FirstOrDefaultAsync(news => news.Id == id);
         if (news == null)
         {
             ErrorVM error = new()
@@ -253,6 +252,13 @@ public class NewsController : Controller
         {
             return View(newsVm);
         }
+        
+        // If don't have right to edit/delete return Error View.
+        bool hasRights = await _newsRepository.HasEditingRightsAsync(id, userId);
+        if (!hasRights)
+        {
+            return GetDontHaveRightsError();
+        }
 
         News news = new();
         IList<NewsContent> newsContents = new List<NewsContent>();
@@ -268,6 +274,13 @@ public class NewsController : Controller
     {
         string? userId = User.GetUserId();
         if (userId == null)
+        {
+            return BadRequest();
+        }
+        
+        // If don't have right to edit/delete return Error View.
+        bool hasRights = await _newsRepository.HasEditingRightsAsync(id, userId);
+        if (!hasRights)
         {
             return BadRequest();
         }
@@ -287,13 +300,23 @@ public class NewsController : Controller
         return Ok();
     }
 
+    
+    
     private async Task DeleteFileAsync(string filename)
     {
         int indexOfSlash = filename.IndexOf('/') + 1;
         string correctFilename = filename.Substring(indexOfSlash, filename.Length - indexOfSlash);
         await _blobService.DeleteFileAsync(correctFilename);
     }
+    private async Task<string> UploadImageAsync(IFormFile file)
+    {
+        int indexOfDot = file.ContentType.LastIndexOf("/");
+        string postfix = "." + file.ContentType.Substring(indexOfDot + 1, file.ContentType.Length - indexOfDot - 1);
+        string filename = Guid.NewGuid() + postfix;
+        await _blobService.UploadFileAsync(file.OpenReadStream(), filename);
 
+        return filename;
+    }
     private IActionResult GetUserIdError()
     {
         ErrorVM error = new()
@@ -303,14 +326,13 @@ public class NewsController : Controller
         };
         return View("Error", error);
     }
-
-    private async Task<string> UploadImageAsync(IFormFile file)
+    private IActionResult GetDontHaveRightsError()
     {
-        int indexOfDot = file.ContentType.LastIndexOf("/");
-        string postfix = "." + file.ContentType.Substring(indexOfDot + 1, file.ContentType.Length - indexOfDot - 1);
-        string filename = Guid.NewGuid() + postfix;
-        await _blobService.UploadFileAsync(file.OpenReadStream(), filename);
-
-        return filename;
+        ErrorVM error = new()
+        {
+            Title = "Rights error?!",
+            Content = "You don't have right."
+        };
+        return View("Error", error);
     }
 }

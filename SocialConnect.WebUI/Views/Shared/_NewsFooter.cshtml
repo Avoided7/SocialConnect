@@ -7,6 +7,11 @@
 }
 
 <style>
+    .on-hover:hover
+    {
+        cursor: pointer;
+    }
+
     .like
     {
         color: red;;
@@ -35,13 +40,20 @@
 
     @if (Model.UserId == userId)
     {
-        <a asp-controller="News" asp-action="Edit" asp-route-id="@Model.Id" class="text-warning" style="margin-right: 5px; float: right; text-decoration:none; "><i class="bi bi-pencil"></i> Edit</a>
-        <a onclick="deletePost('@Model.Id')" class="text-danger" style="margin-right: 5px; float: right; text-decoration:none; "><i class="bi bi-trash"></i> Delete</a>
+        <a class="text-warning" asp-controller="News" asp-action="Edit" asp-route-id="@Model.Id" style="margin-right: 5px; float: right; text-decoration:none; "><i class="bi bi-pencil"></i> Edit</a>
+        <a class="text-danger on-hover" onclick="deletePost('@Model.Id')" style="margin-right: 5px; float: right; text-decoration:none; "><i class="bi bi-trash"></i> Delete</a>
     }
 }
 else
 {
     <a class="text-white" asp-controller="Groups" asp-action="Info" asp-route-groupName="@groupName" style="float: right;"><i class="bi bi-people-fill"></i> @groupName</a>
+
+    GroupUser? user = Model.Group?.Users?.FirstOrDefault(groupUser =>groupUser.UserId == userId);
+    @if (user != null && user.UserStatus != GroupUserStatus.User)
+    {
+        <a class="text-warning" asp-controller="News" asp-action="Edit" asp-route-id="@Model.Id" style="margin-right: 5px; float: right; text-decoration:none; "><i class="bi bi-pencil"></i> Edit</a>
+        <a class="text-danger on-hover" onclick="deletePost('@Model.Id')" style="margin-right: 5px; float: right; text-decoration:none; "><i class="bi bi-trash"></i> Delete</a>
+    }
 }
 
 <hr/>
