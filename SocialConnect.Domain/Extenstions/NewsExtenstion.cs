@@ -1,11 +1,33 @@
 ﻿using System.Collections;
 using SocialConnect.Domain.Entities;
+using SocialConnect.Domain.Enums;
 using SocialConnect.Domain.Interfaces;
 
 namespace SocialConnect.Domain.Extenstions;
 
 public static class NewsExtenstion
 {
+    public static async Task<bool> HasEditingRightsAsync(this INewsRepository newsRepository, string newsId, string userId)
+    {
+        News? news = await newsRepository.FirstOrDefaultAsync(news => news.Id == newsId);
+        if (news == null)
+        {
+            return false;
+        }
+
+        if (news.GroupId == null)
+        {
+            return news.UserId == userId;
+        }
+
+        GroupUser? groupUser = news.Group?.Users.FirstOrDefault(groupUser => groupUser.UserId == userId);
+        if (groupUser == null || groupUser.UserStatus == GroupUserStatus.User)
+        {
+            return false;
+        }
+
+        return true;
+    }
     public static async Task<IEnumerable<News>> GetNewsFromUsersNGroupsAsync(this INewsRepository newsRepository,
                                                                  IEnumerable<string> users,
                                                                  IEnumerable<string> groups)

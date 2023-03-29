@@ -1,0 +1,26 @@
+﻿@model News
+<div class="card mb-2">
+            <div class="card-body">
+                <p style="font-size: 18px;">@Model.Contents.FirstOrDefault(news => news.Type == NewsContentType.Text)?.Content</p>
+                
+                @* Load images from Model *@
+                @(await Html.PartialAsync("_LoadImage", Model))
+                
+                @* Load footer *@
+                @(await Html.PartialAsync("_NewsFooter", Model))
+            </div>
+            <div class="card-footer">
+                <span class="text-light" style="font-style: italic;">
+                    @if (Model.WrittenIn < DateTime.UtcNow.AddDays(-6))
+                    {
+                        @Model.WrittenIn.ToLongDateString()
+                    }
+                    else
+                    {
+                        @Model.WrittenIn.DayOfWeek
+                    }
+
+                    at @Model.WrittenIn.ToShortTimeString()
+                </span>
+            </div>
+        </div>

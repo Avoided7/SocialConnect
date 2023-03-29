@@ -5,8 +5,6 @@ namespace SocialConnect.Domain.Entities;
 public class News : IEntity
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string Title { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
     public DateTime WrittenIn { get; set; } = DateTime.UtcNow;
     public bool IsUserNews => GroupId == null;
     
@@ -18,4 +16,5 @@ public class News : IEntity
     public Group? Group { get; set; }
     public virtual IList<Comment> Comments { get; set; } = null!;
     public virtual IList<NewsLike> Likes { get; set; } = null!;
+    public virtual IList<NewsContent> Contents { get; set; } = null!;
 }

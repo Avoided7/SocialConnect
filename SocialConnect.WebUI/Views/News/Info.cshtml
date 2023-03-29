@@ -1,17 +1,10 @@
 ﻿@model News
 
 @{
-    ViewData["Title"] = Model.Title;
+    ViewData["Title"] = "News";
     string userId = User.GetUserId() ?? string.Empty;
 }
-<div class="card mb-3">
-    <div class="card-body">
-        <h3>@Model.Title</h3>
-        <hr/>
-        <p>@Model.Description</p>
-        @(await Html.PartialAsync("_NewsFooter", Model))
-    </div>
-</div>
+@(await Html.PartialAsync("_LoadNews", Model))
 @if (Model.Comments.Any())
 {
     <div class="card">

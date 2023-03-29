@@ -4,7 +4,7 @@
     string alertStyle = Model.IsSucceeded ? "success" : "danger";
 }
 
-<div class="alert alert-dismissible alert-@alertStyle col-md-6">
+<div class="alert alert-dismissible alert-@alertStyle">
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     <h3>@Model.Title</h3>
     <p>@Model.Content</p>
