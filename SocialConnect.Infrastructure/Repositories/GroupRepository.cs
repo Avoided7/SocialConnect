@@ -6,6 +6,7 @@ using SocialConnect.Domain.Enums;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Infrastructure.Data;
 using System.Linq.Expressions;
+using Microsoft.VisualBasic;
 
 namespace SocialConnect.Infrastructure.Repositories
 {
@@ -25,6 +26,16 @@ namespace SocialConnect.Infrastructure.Repositories
         }
 
         #region GET
+
+        public IEnumerable<Group> Get()
+        {
+            return _dbContext.Groups.AsNoTracking();
+        }
+
+        public IEnumerable<Group> Get(Expression<Func<Group, bool>> expression)
+        {
+            return _dbContext.Groups.AsNoTracking().Where(expression);
+        }
 
         public async Task<Group?> FirstOrDefaultAsync(Expression<Func<Group, bool>> expression)
         {
@@ -48,34 +59,11 @@ namespace SocialConnect.Infrastructure.Repositories
             }
         }
 
-        public Task<IQueryable<Group>> GetAsync()
+        public async Task<IReadOnlyCollection<Group>> GetAsync()
         {
             try
             {
-                return Task.Run(() => _dbContext.Groups
-                    .Include(group => group.Users)
-                        .ThenInclude(groupUser => groupUser.User)
-                    .Include(group => group.News)
-                        .ThenInclude(news => news.Contents)
-                    .Include(group => group.News)
-                        .ThenInclude(news => news.Comments)
-                    .Include(group => group.News)
-                        .ThenInclude(news => news.Likes)
-                    .AsNoTracking());
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return Task.Run(() => Enumerable.Empty<Group>().AsQueryable());
-            }
-        }
-
-        public Task<IQueryable<Group>> GetAsync(Expression<Func<Group, bool>> expression)
-        {
-            try
-            {
-                return Task.Run(() => _dbContext.Groups
+                return await _dbContext.Groups
                     .Include(group => group.Users)
                         .ThenInclude(groupUser => groupUser.User)
                     .Include(group => group.News)
@@ -85,13 +73,38 @@ namespace SocialConnect.Infrastructure.Repositories
                     .Include(group => group.News)
                         .ThenInclude(news => news.Likes)
                     .AsNoTracking()
-                    .Where(expression));
+                    .ToListAsync();
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return Task.Run(() => Enumerable.Empty<Group>().AsQueryable());
+                return Enumerable.Empty<Group>().ToList();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<Group>> GetAsync(Expression<Func<Group, bool>> expression)
+        {
+            try
+            {
+                return await _dbContext.Groups
+                    .Include(group => group.Users)
+                        .ThenInclude(groupUser => groupUser.User)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Contents)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Comments)
+                    .Include(group => group.News)
+                        .ThenInclude(news => news.Likes)
+                    .AsNoTracking()
+                    .Where(expression)
+                    .ToListAsync();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Enumerable.Empty<Group>().ToList();
             }
         }
 
@@ -103,11 +116,11 @@ namespace SocialConnect.Infrastructure.Repositories
         {
             try
             {
-                bool isExisted = await _dbContext.Groups.AnyAsync(group => group.Name.ToLower() == entity.Name.ToLower());
+                Group? existedGroup = await _dbContext.Groups.FirstOrDefaultAsync(group => group.Name.ToLower() == entity.Name.ToLower());
 
-                if(isExisted)
+                if(existedGroup != null)
                 {
-                    return null;
+                    return existedGroup;
                 }
 
                 await _dbContext.Groups.AddAsync(entity);
@@ -181,259 +194,71 @@ namespace SocialConnect.Infrastructure.Repositories
                 return null;
             }
         }
+        
+        public async Task<GroupUser?> UpdateGroupUserAsync(string groupId, string userId, GroupUser user)
+        {
+            GroupUser? groupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser => groupUser.GroupId == groupId &&
+                                                                                                groupUser.UserId == userId);
+            if (groupUser  == null)
+            {
+                return null;
+            }
+
+            groupUser.IsAgreed = user.IsAgreed;
+            groupUser.UserStatus = user.UserStatus;
+
+            _dbContext.GroupUsers.Update(groupUser);
+            await _dbContext.SaveChangesAsync();
+
+            return groupUser;
+        }
 
 
         #endregion
 
-        #region CUSTOM METHODS
+        #region GROUP USER METHODS
         
-        public async Task<bool> JoinUserAsync(string groupId, string userId)
+        public async Task<bool> AddUserToGroupAsync(string groupId, GroupUser groupUser)
         {
-            try
+            if(!await _dbContext.Groups.AnyAsync(group => group.Id == groupId))
             {
-                Group? group = await FirstOrDefaultAsync(group => group.Id == groupId);
-                if (group == null)
-                {
-                    return false;
-                }
-                GroupUser? existedGroupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser => groupUser.GroupId == groupId &&
-                                                                                                           groupUser.UserId == userId);
-                if (existedGroupUser != null)
-                {
-                    return false;
-                }
-
-                existedGroupUser = new GroupUser
-                {
-                    GroupId = groupId,
-                    UserId = userId,
-                    UserStatus = GroupUserStatus.User
-                };
-
-                if(group.UserCount == 0)
-                {
-                    existedGroupUser.UserStatus = GroupUserStatus.Founder;
-                    existedGroupUser.IsAgreed = true;
-                }
-
-                _dbContext.GroupUsers.Add(existedGroupUser);
-                await _dbContext.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
                 return false;
             }
+
+            groupUser.GroupId = groupId;
+            await _dbContext.GroupUsers.AddAsync(groupUser);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
         }
 
-        public async Task<bool> LeftUserAsync(string groupId, string userId)
+        public async Task<bool> RemoveUserFromGroupAsync(string groupId, string userId)
         {
-            try
+            if(!await _dbContext.Groups.AnyAsync(group => group.Id == groupId))
             {
-                Group? group = await FirstOrDefaultAsync(group => group.Id == groupId);
-                if (group == null)
-                {
-                    return false;
-                }
-                if(group.UserCount == 1)
-                {
-                    return await DeleteAsync(group.Id);
-                }
-                GroupUser? existedGroupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser => groupUser.GroupId == groupId &&
-                                                                                                           groupUser.UserId == userId);
-                if (existedGroupUser == null || existedGroupUser.UserStatus == GroupUserStatus.Founder)
-                {
-                    return false;
-                }
-
-                _dbContext.GroupUsers.Remove(existedGroupUser);
-                await _dbContext.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
                 return false;
             }
-        }
 
-        public async Task<bool> PromoteUserAsync(string currentUserId, string userId, string groupId, GroupUserStatus newStatus)
-        {
-            try
+            GroupUser? groupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser => groupUser.UserId == userId);
+            if (groupUser == null)
             {
-                if(newStatus == GroupUserStatus.Founder)
-                {
-                    return false;
-                }
-                Group? group = await FirstOrDefaultAsync(group => group.Id == groupId);
-                if (group == null)
-                {
-                    return false;
-                }
-
-                GroupUser? promotedUser = group.Users.FirstOrDefault(groupUser => groupUser.UserId == userId);
-                if (promotedUser == null || promotedUser.UserStatus == GroupUserStatus.Founder)
-                {
-                    return false;
-                }
-
-                GroupUser? founder = group.Users.FirstOrDefault(groupUser => groupUser.UserId == currentUserId);
-
-                if (founder == null || founder.UserStatus != GroupUserStatus.Founder)
-                {
-                    return false;
-                }
-
-                promotedUser.UserStatus = newStatus;
-                _dbContext.GroupUsers.Update(promotedUser);
-                await _dbContext.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
                 return false;
             }
+
+            _dbContext.GroupUsers.Remove(groupUser);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
         }
 
-        public async Task<bool> AcceptUserAsync(string currenUserId, string userId, string groupId)
+        public async Task<GroupUserStatus?> GetUserStatusAsync(string groupId, string userId)
         {
-            try
-            {
-                Group? group = await _dbContext.Groups.Include(group => group.Users)
-                    .FirstOrDefaultAsync(group => group.Id == groupId);
-
-                if (group == null)
-                {
-                    return false;
-                }
-
-                GroupUser? currentUser = group.Users.FirstOrDefault(user => user.UserId == currenUserId);
-
-                if (currentUser == null || currentUser.UserStatus == GroupUserStatus.User)
-                {
-                    return false;
-                }
-
-                GroupUser? acceptedUser = group.Users.FirstOrDefault(user => user.UserId == userId);
-
-                if (acceptedUser == null || acceptedUser.IsAgreed)
-                {
-                    return false;
-                }
-
-                acceptedUser.IsAgreed = true;
-                _dbContext.GroupUsers.Update(acceptedUser);
-                await _dbContext.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
+            GroupUser? groupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser => groupUser.GroupId == groupId &&
+                                                                                                groupUser.UserId == userId);
+            return groupUser?.UserStatus;
         }
 
-        public async Task<bool> DeclineRequestAsync(string userId, string groupId)
-        {
-            try
-            {
-                GroupUser? groupUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser =>
-                    groupUser.UserId == userId && groupUser.GroupId == groupId);
-                if (groupUser == null)
-                {
-                    return false;
-                }
 
-                if (groupUser.IsAgreed)
-                {
-                    return false;
-                }
-
-                _dbContext.GroupUsers.Remove(groupUser);
-                await _dbContext.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
-        }
-
-        public async Task<bool> DeclineRequestAsync(string currentUserId, string userId, string groupId)
-        {
-            try
-            {
-                GroupUser? currentUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser =>
-                    groupUser.UserId == currentUserId && groupUser.GroupId == groupId);
-                if (currentUser == null || currentUser.UserStatus == GroupUserStatus.User)
-                {
-                    return false;
-                }
-
-                GroupUser? declinedUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(groupUser =>
-                    groupUser.UserId == userId && groupUser.GroupId == groupId);
-                
-                if (declinedUser == null || declinedUser.IsAgreed)
-                {
-                    return false;
-                }
-
-                _dbContext.GroupUsers.Remove(declinedUser);
-                await _dbContext.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
-        }
-
-        public async Task<bool> KickUserAsync(string currentUserId, string userId, string groupId)
-        {
-            try
-            {
-                Group? group = await _dbContext.Groups.Include(group => group.Users)
-                                                      .FirstOrDefaultAsync(group => group.Id == groupId);
-
-                if (group == null)
-                {
-                    return false;
-                }
-
-                GroupUser? currentUser = group.Users.FirstOrDefault(groupUser => groupUser.UserId == currentUserId);
-
-                if (currentUser == null || currentUser.UserStatus == GroupUserStatus.User)
-                {
-                    return false;
-                }
-
-                GroupUser? kickedUser = group.Users.FirstOrDefault(groupUser => groupUser.UserId == userId);
-
-                if (kickedUser == null || kickedUser.UserStatus == GroupUserStatus.Founder)
-                {
-                    return false;
-                }
-                if (kickedUser.UserStatus == GroupUserStatus.Admin && currentUser.UserStatus != GroupUserStatus.Founder)
-                {
-                    return false;
-                }
-
-                _dbContext.GroupUsers.Remove(kickedUser);
-                await _dbContext.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
-        }
-        
         #endregion
     }
 }

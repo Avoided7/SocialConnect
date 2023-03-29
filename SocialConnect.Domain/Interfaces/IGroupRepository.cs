@@ -6,12 +6,9 @@ namespace SocialConnect.Domain.Interfaces
 {
     public interface IGroupRepository : IRepository<Group>
     {
-        Task<bool> JoinUserAsync(string groupId, string userId);
-        Task<bool> KickUserAsync(string currentUserId, string userId, string groupId);
-        Task<bool> LeftUserAsync(string groupId, string userId);
-        Task<bool> PromoteUserAsync(string currentUserId, string userId, string groupId, GroupUserStatus newStatus);
-        Task<bool> AcceptUserAsync(string currenUserId, string userId, string groupId);
-        Task<bool> DeclineRequestAsync(string userId, string groupId);
-        Task<bool> DeclineRequestAsync(string currentUserId, string userId, string groupId);
+        Task<bool> AddUserToGroupAsync(string groupId, GroupUser groupUser);
+        Task<bool> RemoveUserFromGroupAsync(string groupId, string userId);
+        Task<GroupUser?> UpdateGroupUserAsync(string groupId, string userId, GroupUser user);
+        Task<GroupUserStatus?> GetUserStatusAsync(string groupId, string userId);
     }
 }

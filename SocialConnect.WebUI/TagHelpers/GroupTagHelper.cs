@@ -21,7 +21,7 @@ public class GroupTagHelper : TagHelper
 
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        int count = await _groupRepository.GetGroupRequestsCountAsync(UserId);
+        int count = await _groupRepository.GetGroupsRequestsCountAsync(UserId);
 
         if (count == 0)
         {

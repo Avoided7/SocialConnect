@@ -271,7 +271,7 @@ namespace SocialConnect.WebUI.Controllers
                 Reciever = user.Email
             };
 
-            _emailService.SendAsync(emailMessage);
+            _ = _emailService.SendAsync(emailMessage);
 
         }
 

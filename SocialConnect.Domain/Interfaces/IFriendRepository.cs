@@ -6,10 +6,8 @@ namespace SocialConnect.Domain.Interfaces
 {
     public interface IFriendRepository : IRepository<FriendsCouple>
     {
-        Task<bool> AcceptAsync(string userId, string friendId);
-        Task<bool> DeclineAsync(string userId, string friendId);
         Task<bool> DeleteAsync(string userId, string friendId);
-        Task<IQueryable<User>> GetUserFriendsAsync(string userId);
-        Task<IQueryable<User>> GetUserFriendsAsync(string userId, Expression<Func<FriendsCouple, bool>> expression);
+        Task<IReadOnlyCollection<User>> GetUserFriendsAsync(string userId);
+        Task<IReadOnlyCollection<User>> GetUserFriendsAsync(string userId, Expression<Func<FriendsCouple, bool>> expression);
     }
 }

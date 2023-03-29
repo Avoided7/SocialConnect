@@ -28,7 +28,7 @@ public static class NewsExtenstion
 
         return true;
     }
-    public static async Task<IEnumerable<News>> GetNewsFromUsersNGroupsAsync(this INewsRepository newsRepository,
+    public static async Task<IReadOnlyCollection<News>> GetNewsFromUsersNGroupsAsync(this INewsRepository newsRepository,
                                                                  IEnumerable<string> users,
                                                                  IEnumerable<string> groups)
     {
@@ -38,6 +38,6 @@ public static class NewsExtenstion
         IReadOnlyCollection<News> groupNews = (await newsRepository.GetAsync(news => news.GroupId != null &&
             groups.Contains(news.GroupId))).ToList();
         
-        return usersNews.Concat(groupNews).OrderByDescending(news => news.WrittenIn);
+        return usersNews.Concat(groupNews).OrderByDescending(news => news.WrittenIn).ToList();
     }
 }

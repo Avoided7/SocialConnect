@@ -21,38 +21,49 @@ namespace SocialConnect.Infrastructure.Repositories
         }
         #region GET
 
-        public Task<IQueryable<FriendsCouple>> GetAsync()
+        public IEnumerable<FriendsCouple> Get()
         {
-            return Task.Run(() => _dbContext.Friends.AsNoTracking());
+            return _dbContext.Friends.AsNoTracking();
         }
 
-        public Task<IQueryable<FriendsCouple>> GetAsync(Expression<Func<FriendsCouple, bool>> expression)
+        public IEnumerable<FriendsCouple> Get(Expression<Func<FriendsCouple, bool>> expression)
         {
-            return Task.Run(() => _dbContext.Friends.AsNoTracking().Where(expression));
+            return _dbContext.Friends.AsNoTracking().Where(expression);
         }
 
-        public async Task<IQueryable<User>> GetUserFriendsAsync(string userId)
+        public async Task<IReadOnlyCollection<FriendsCouple>> GetAsync()
+        {
+            return await _dbContext.Friends.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IReadOnlyCollection<FriendsCouple>> GetAsync(Expression<Func<FriendsCouple, bool>> expression)
+        {
+            return await _dbContext.Friends.AsNoTracking().Where(expression).ToListAsync();
+        }
+
+        public async Task<IReadOnlyCollection<User>> GetUserFriendsAsync(string userId)
         {
             try
             {
                 bool isUserExist = await _dbContext.SocialUsers.AnyAsync(user => user.Id == userId);
                 if (!isUserExist)
                 {
-                    return Enumerable.Empty<User>().AsQueryable();
+                    return Enumerable.Empty<User>().ToList();
                 };
-                IQueryable<User> friends = _dbContext.Friends
-                                                            .Where(friend => (!friend.IsAgreed && (friend.FriendId == userId || friend.UserId == userId)) || 
-                                                                                        (friend.IsAgreed && friend.FriendId == userId))
-                                                            .Select(friend => _dbContext.SocialUsers.First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)));
+                IReadOnlyCollection<User> friends = await _dbContext.Friends
+                                                                            .Where(friend => (!friend.IsAgreed && (friend.FriendId == userId || friend.UserId == userId)) || 
+                                                                                                        (friend.IsAgreed && friend.FriendId == userId))
+                                                                            .Select(friend => _dbContext.SocialUsers.First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)))
+                                                                            .ToListAsync();
                 return friends;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return Enumerable.Empty<User>().AsQueryable();
+                return Enumerable.Empty<User>().ToList();
             }
         }
-        public async Task<IQueryable<User>> GetUserFriendsAsync(string userId,
+        public async Task<IReadOnlyCollection<User>> GetUserFriendsAsync(string userId,
                                                                  Expression<Func<FriendsCouple, bool>> expression)
         {
             try
@@ -60,17 +71,18 @@ namespace SocialConnect.Infrastructure.Repositories
                 bool isUserExist = await _dbContext.Users.AnyAsync(user => user.Id == userId);
                 if (!isUserExist)
                 {
-                    return Enumerable.Empty<User>().AsQueryable();
+                    return Enumerable.Empty<User>().ToList();
                 }
-                IQueryable<User> friends = _dbContext.Friends.Where(expression)
-                                                              .Select(friend => _dbContext.SocialUsers.Include(user => user.Friends)
-                                                                                                                .First(user => user.Id == friend.FriendId || user.Id == friend.UserId));
+                IReadOnlyCollection<User> friends = await _dbContext.Friends.Where(expression)
+                                                                            .Select(friend => _dbContext.SocialUsers.Include(user => user.Friends)
+                                                                                                                    .First(user => user.Id == friend.FriendId || user.Id == friend.UserId))
+                                                                            .ToListAsync();
                 return friends;
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return Enumerable.Empty<User>().AsQueryable();
+                return Enumerable.Empty<User>().ToList();
             }
         }
 
@@ -162,58 +174,5 @@ namespace SocialConnect.Infrastructure.Repositories
 
         #endregion
 
-        #region ACCEPT
-        public async Task<bool> AcceptAsync(string userId, string friendId)
-        {
-            FriendsCouple? friend = await _dbContext.Friends.FirstOrDefaultAsync(friendCouple => friendCouple.UserId == userId &&
-                                                                                                 friendCouple.FriendId == friendId);
-            if(friend == null || friend.IsAgreed)
-            {
-                return false;
-            }
-            friend.IsAgreed = true;
-            FriendsCouple friendsCouple = new()
-            {
-                UserId = friend.FriendId,
-                FriendId = friend.UserId,
-                IsAgreed = true
-            };
-
-            _dbContext.Friends.Update(friend);
-            _dbContext.Friends.Add(friendsCouple);  
-            await _dbContext.SaveChangesAsync();
-
-            return true;
-        }
-
-        #endregion
-
-        #region DECLINE
-
-        public async Task<bool> DeclineAsync(string userId, string friendId)
-        {
-            FriendsCouple? friend = await _dbContext.Friends.FirstOrDefaultAsync(friendCouple => friendCouple.UserId == userId &&
-                                                                                                 friendCouple.FriendId == friendId);
-            if (friend == null || friend.IsAgreed)
-            {
-                if (friend != null)
-                {
-                    return false;
-                }
-
-                friend = await _dbContext.Friends.FirstOrDefaultAsync(friendCouple => friendCouple.UserId == friendId &&
-                                                                                      friendCouple.FriendId == userId);
-                if(friend == null)
-                {
-                    return false;
-                }
-            }
-            _dbContext.Friends.Remove(friend);
-            await _dbContext.SaveChangesAsync();
-
-            return true;
-        }
-
-        #endregion
     }
 }

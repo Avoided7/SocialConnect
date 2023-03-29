@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Shared.Models;
 
-namespace SocialConnect.Infrastructure.Repositories
+namespace SocialConnect.Infrastructure.Services
 {
     public class MailKitEmailService : IMailKitEmailService
     {
@@ -15,13 +15,13 @@ namespace SocialConnect.Infrastructure.Repositories
         public MailKitEmailService(IConfiguration configuration,
                             ILogger<MailKitEmailService> logger)
         {
-            this._configuration = configuration;
-            this._logger = logger;
+            _configuration = configuration;
+            _logger = logger;
         }
-        public async void SendAsync(EmailMessage emailDto)
+        public async Task SendAsync(EmailMessage emailDto)
         {
             try
-            {         
+            {
                 MimeMessage message = new MimeMessage();
                 message.From.Add(MailboxAddress.Parse(_configuration.GetSection("Mail:Sender").Value));
                 message.To.Add(MailboxAddress.Parse(emailDto.Reciever));
@@ -40,7 +40,7 @@ namespace SocialConnect.Infrastructure.Repositories
                     await client.DisconnectAsync(true);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
             }

@@ -1,11 +1,7 @@
-﻿@model IEnumerable<UserVM>
+﻿@model FriendVM
 
 @{
     ViewData["Title"] = "Friends";
-    List<UserVM> friends = Model.Where(user => user.Status == FriendStatus.Friend).ToList();
-    List<UserVM> sendedRequest = Model.Where(user => user.Status == FriendStatus.SendedRequest).ToList();
-    List<UserVM> waitedResponse = Model.Where(user => user.Status == FriendStatus.WaitedResponse).ToList();
-    
 }
 
 <style>
@@ -35,18 +31,18 @@
     }
 </style>
 
-@if(!Model.Any())
+@if(!Model.HasAny)
 {
     <h3 class="text-center">Nobody here...</h3>
 }
 else
 {
-    @if (waitedResponse.Any())
+    @if (Model.WaitedResponse.Any())
     {
         <div class="text-center">
             <h3>Waited Response</h3>
         </div>
-        @foreach(UserVM user in waitedResponse)
+        @foreach (UserVM user in Model.WaitedResponse)
         {
             <div class="card border-success mb-3">
                 <div class="card-body">
@@ -68,12 +64,12 @@ else
         }
         <hr/>
     }
-    @if (friends.Any())
+    @if (Model.Friends.Any())
     {
         <div class="text-center">
             <h3>Friends</h3>
         </div>
-        @foreach(UserVM user in friends)
+        @foreach (UserVM user in Model.Friends)
         {
             <div class="card border-light mb-3">
                 <div class="card-body">
@@ -94,12 +90,12 @@ else
         }
         <hr/>
     }
-    @if (sendedRequest.Any())
+    @if (Model.SendedRequest.Any())
     {
         <div class="text-center">
             <h3>Sended Request</h3>
         </div>
-        @foreach(UserVM user in sendedRequest)
+        @foreach (UserVM user in Model.SendedRequest)
         {
             <div class="card border-info mb-3">
                 <div class="card-body">

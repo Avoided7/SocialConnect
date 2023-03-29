@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using SocialConnect.Infrastructure.Interfaces;
 
-namespace SocialConnect.Infrastructure.Data;
+namespace SocialConnect.Infrastructure.Services;
 
 public class BlobService : IBlobService
 {
