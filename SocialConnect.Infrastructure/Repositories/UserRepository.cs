@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
-using SocialConnect.Domain.Entities;
+﻿using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
-using SocialConnect.Shared.Models;
-using SocialConnect.Infrastructure.Interfaces;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SocialConnect.Domain.Entities.Constants;
 using Microsoft.Extensions.Logging;
 using SocialConnect.Infrastructure.Data;
 
@@ -26,25 +21,19 @@ namespace SocialConnect.Infrastructure.Repositories
 
         #region GET
 
-        public Task<IQueryable<User>> GetAsync()
+        public IEnumerable<User> Get()
         {
-            return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
-                                           .Include(user => user.Friends)
-                                           .Include(user => user.News)
-                                                .ThenInclude(news => news.Contents)
-                                           .Include(user => user.News)
-                                                .ThenInclude(news => news.Likes)
-                                           .Include(user => user.News)
-                                                .ThenInclude(news => news.Comments)
-                                                    .ThenInclude(comment => comment.Likes)
-                                           .Include(user => user.Groups)
-                                                .ThenInclude(groupUser => groupUser.Group)
-                                           .AsNoTracking());
+            return _dbContext.SocialUsers.AsNoTracking();
         }
 
-        public Task<IQueryable<User>> GetAsync(Expression<Func<User, bool>> expression)
+        public IEnumerable<User> Get(Expression<Func<User, bool>> expression)
         {
-            return Task.Run(() => _dbContext.SocialUsers.AsNoTracking()
+            return _dbContext.SocialUsers.AsNoTracking().Where(expression);
+        }
+
+        public async Task<IReadOnlyCollection<User>> GetAsync()
+        {
+            return await _dbContext.SocialUsers.AsNoTracking()
                                            .Include(user => user.Friends)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Contents)
@@ -56,7 +45,25 @@ namespace SocialConnect.Infrastructure.Repositories
                                            .Include(user => user.Groups)
                                                 .ThenInclude(groupUser => groupUser.Group)
                                            .AsNoTracking()
-                                           .Where(expression));
+                                           .ToListAsync();
+        }
+
+        public async Task<IReadOnlyCollection<User>> GetAsync(Expression<Func<User, bool>> expression)
+        {
+            return await _dbContext.SocialUsers.AsNoTracking()
+                                           .Include(user => user.Friends)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Contents)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Likes)
+                                           .Include(user => user.News)
+                                                .ThenInclude(news => news.Comments)
+                                                    .ThenInclude(comment => comment.Likes)
+                                           .Include(user => user.Groups)
+                                                .ThenInclude(groupUser => groupUser.Group)
+                                           .AsNoTracking()
+                                           .Where(expression)
+                                           .ToListAsync();
         }
 
         public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> expression)

@@ -1,5 +1,4 @@
 ﻿using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using SocialConnect.Domain.Extenstions;

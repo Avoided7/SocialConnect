@@ -4,6 +4,6 @@ namespace SocialConnect.Infrastructure.Interfaces
 {
     public interface IMailKitEmailService
     {
-        void SendAsync(EmailMessage email);
+        Task SendAsync(EmailMessage email);
     }
 }

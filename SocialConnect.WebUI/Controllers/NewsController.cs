@@ -57,7 +57,7 @@ public class NewsController : Controller
         IEnumerable<string> groups = user.Groups.Where(group => group.IsAgreed)
                                                 .Select(group => group.GroupId!);
         
-        IEnumerable<News> news = await _newsRepository.GetNewsFromUsersNGroupsAsync(friends, groups);
+        IReadOnlyCollection<News> news = await _newsRepository.GetNewsFromUsersNGroupsAsync(friends, groups);
 
         return View(news);
     }

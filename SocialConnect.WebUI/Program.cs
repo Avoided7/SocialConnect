@@ -4,9 +4,8 @@ using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Infrastructure.Data;
 using SocialConnect.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using SocialConnect.Infrastructure.Repositories;
+using SocialConnect.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,10 +56,6 @@ builder.Services.AddScoped<IBlobService, BlobService>();
 
 string blobConnectionString = builder.Configuration.GetConnectionString("BlobConnectionString");
 builder.Services.AddSingleton(new BlobServiceClient(blobConnectionString));
-
-builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>()
-    .AddScoped(x => x.GetRequiredService<IUrlHelperFactory>()
-        .GetUrlHelper(x.GetRequiredService<IActionContextAccessor>().ActionContext!));
 
 builder.Services.AddSingleton<IMailKitEmailService, MailKitEmailService>();
 

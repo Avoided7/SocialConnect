@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
@@ -24,9 +23,19 @@ public class NewsRepository : INewsRepository
 
     #region GET
 
-    public Task<IQueryable<News>> GetAsync()
+    public IEnumerable<News> Get()
     {
-        return Task.Run(() => _dbContext.News
+        return _dbContext.News.AsNoTracking();
+    }
+
+    public IEnumerable<News> Get(Expression<Func<News, bool>> expression)
+    {
+        return _dbContext.News.AsNoTracking().Where(expression);
+    }
+
+    public async Task<IReadOnlyCollection<News>> GetAsync()
+    {
+        return await _dbContext.News
             .Include(news => news.User)
             .Include(news => news.Group)
                 .ThenInclude(group => group == null ? default : group.Users)
@@ -36,12 +45,13 @@ public class NewsRepository : INewsRepository
                 .ThenInclude(comment => comment.Likes)
             .Include(news => news.Comments)
                 .ThenInclude(comment => comment.User)
-            .AsNoTracking());
+            .AsNoTracking()
+            .ToListAsync();
     }
 
-    public Task<IQueryable<News>> GetAsync(Expression<Func<News, bool>> expression)
+    public async Task<IReadOnlyCollection<News>> GetAsync(Expression<Func<News, bool>> expression)
     {
-        return Task.Run(() => _dbContext.News
+        return await _dbContext.News
             .Include(news => news.User)
             .Include(news => news.Group)
                 .ThenInclude(group => group == null ? default : group.Users)
@@ -52,7 +62,8 @@ public class NewsRepository : INewsRepository
             .Include(news => news.Comments)
                 .ThenInclude(comment => comment.User)
             .Where(expression)
-            .AsNoTracking());
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<News?> FirstOrDefaultAsync(Expression<Func<News, bool>> expression)
@@ -246,6 +257,6 @@ public class NewsRepository : INewsRepository
             return false;
         }
     }
-    
+
     #endregion
 }

@@ -5,6 +5,8 @@ using SocialConnect.Domain.Interfaces;
 using SocialConnect.WebUI.Extenstions;
 using System.Security.Claims;
 using SocialConnect.WebUI.ViewModels;
+using SocialConnect.WebUI.ViewModels.Enums;
+using SocialConnect.Domain.Extenstions;
 
 namespace SocialConnect.WebUI.Controllers
 {
@@ -28,7 +30,17 @@ namespace SocialConnect.WebUI.Controllers
             }
             IEnumerable<User> friends = await _friendRepository.GetUserFriendsAsync(userId);
             IEnumerable<FriendsCouple> friendsCouples = await _friendRepository.GetAsync(friend => friend.FriendId == userId || friend.UserId == userId);
-            return View(friends.GetFriendsStatus(friendsCouples));
+
+            IEnumerable<UserVM> friendsWithStatus = friends.GetFriendsStatus(friendsCouples);
+
+            FriendVM friendsVM = new()
+            {
+                Friends = friendsWithStatus.Where(user => user.Status == FriendStatus.Friend).ToList(),
+                SendedRequest = friendsWithStatus.Where(user => user.Status == FriendStatus.SendedRequest).ToList(),
+                WaitedResponse = friendsWithStatus.Where(user => user.Status == FriendStatus.WaitedResponse).ToList(),
+            };
+
+            return View(friendsVM);
         }
         
         [HttpGet("{action}/{friendId}")]

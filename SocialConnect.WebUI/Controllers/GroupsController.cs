@@ -38,7 +38,7 @@ namespace SocialConnect.WebUI.Controllers
                 };
                 return View("Error", error);
             }
-            IQueryable<Group> groups = await _groupRepository.GetAsync(group => group.Users.Any(u => u.UserId == userId));
+            IReadOnlyCollection<Group> groups = await _groupRepository.GetAsync(group => group.Users.Any(u => u.UserId == userId));
             return View(groups);
         }
         [HttpGet]
