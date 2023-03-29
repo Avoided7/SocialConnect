@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Enums;
 using SocialConnect.Domain.Interfaces;
 using SocialConnect.Infrastructure.Data;
 using System.Linq.Expressions;
-using Microsoft.VisualBasic;
 
 namespace SocialConnect.Infrastructure.Repositories
 {

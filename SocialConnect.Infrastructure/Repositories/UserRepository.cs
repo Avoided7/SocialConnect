@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
-using SocialConnect.Domain.Entities;
+﻿using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
-using SocialConnect.Shared.Models;
-using SocialConnect.Infrastructure.Interfaces;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SocialConnect.Domain.Entities.Constants;
 using Microsoft.Extensions.Logging;
 using SocialConnect.Infrastructure.Data;
 

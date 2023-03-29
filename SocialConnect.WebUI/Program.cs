@@ -4,8 +4,6 @@ using SocialConnect.Infrastructure.Interfaces;
 using SocialConnect.Infrastructure.Data;
 using SocialConnect.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using SocialConnect.Infrastructure.Repositories;
 using SocialConnect.Infrastructure.Services;
 

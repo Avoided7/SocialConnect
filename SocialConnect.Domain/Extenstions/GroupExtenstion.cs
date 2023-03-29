@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SocialConnect.Domain.Entities;
+﻿using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Enums;
 using SocialConnect.Domain.Interfaces;
-using System.Diagnostics.Metrics;
 
 namespace SocialConnect.Domain.Extenstions
 {

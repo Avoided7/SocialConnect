@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using SocialConnect.Domain.Entities;
+﻿using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Enums;
 using SocialConnect.Domain.Interfaces;
 
