@@ -1,0 +1,97 @@
+﻿@model Chat
+
+@{
+    string currentUsername = User.Identity?.Name ?? "";
+}
+
+<style>
+    .link-decorator
+    {
+        text-decoration: none;
+    }
+</style>
+
+<div class="card card-body mb-3">
+    <div id="messages" style="height: 400px; overflow: auto;">
+        @foreach (ChatMessage message in Model.Messages)
+        {
+            string username = @message.Chat.Users.First(user => message.UserId == user.UserId).User!.UserName;
+            string color = username == currentUsername ? "text-info" : "text-success";
+            string textPosition = username == currentUsername ? "float: right;" : "";
+                <div class="bg-secondary mb-1" style="padding: 5px; width: 50%; clear: both; @textPosition">
+                    <a class="@color link-decorator" asp-controller="Account" asp-action="Profile" asp-route-username="@username">@username</a>
+                    <div>@message.Content</div>
+                </div>
+        }
+    </div>
+</div>
+
+<div class="chat-box card card-body mb-3">
+    <input class="form-control bg-body text-white mb-2" id="messageContent" placeholder="Message"/>
+    <input class="btn btn-success" type="button" id="messageSend" value="Send" disabled/>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+<script>
+    const connectionHub = new signalR.HubConnectionBuilder()
+                                     .withUrl("/chat?groupName=@Model.GroupName")
+                                     .build()
+    const messageBody = document.getElementById("messages");
+    const currentUsername = '@currentUsername';
+    console.log(currentUsername);
+    messageBody.scrollTop = messageBody.scrollHeight;
+                              
+    document.getElementById("messageSend").addEventListener("click", function ()
+    {
+        const message = document.getElementById("messageContent");
+        
+        connectionHub.invoke("Send", "@Model.GroupName", message.value);
+        
+        message.value = "";
+        message.select();
+    })
+                                     
+    connectionHub.on("Receive", function (username, message)
+    {
+         
+         const messageCard = document.createElement("div");
+         messageCard.classList.add("bg-secondary");
+         messageCard.classList.add("mb-1");
+         messageCard.style.padding = "5px";
+         messageCard.style.width = "50%";
+         messageCard.style.clear = "both";
+         
+         const div = document.createElement("div");
+         const link = document.createElement("a");
+         
+         if (username == currentUsername)
+          {
+              messageCard.style.float = "right";
+              link.classList.add("text-info");
+          }
+         
+         link.classList.add("link-decorator");
+         
+         link.setAttribute("href", '@Url.ActionLink("Profile", "Account")' + "&username=" + username)
+         link.textContent = username;
+         
+         div.appendChild(link);
+         
+         const messageDiv = document.createElement("div");
+         messageDiv.textContent = message;
+         
+         div.appendChild(messageDiv);
+         
+         messageCard.appendChild(div);
+         
+         messageBody.appendChild(messageCard);
+         
+         messageBody.scrollTop = messageBody.scrollHeight;
+    });
+    
+    connectionHub.start()
+                 .then(function ()
+                 {
+                     document.getElementById("messageSend").disabled = false;
+                 })
+</script>

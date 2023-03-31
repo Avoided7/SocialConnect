@@ -28,6 +28,10 @@
 <div class="card mb-3">
     <div class="card-body">
         <h3>@Model.UserName</h3>
+        @if (userId != Model.Id)
+        {
+            <a class="btn btn-success" asp-controller="Chats" asp-action="Create" asp-route-username="@Model.UserName">Send message</a>
+        }
         <hr/>
         <b>Birthday: @Model.DateOfBirth.ToShortDateString()</b>
     </div>

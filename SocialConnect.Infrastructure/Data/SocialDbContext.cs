@@ -15,8 +15,18 @@ namespace SocialConnect.Infrastructure.Data
         public DbSet<NewsLike> NewsLikes { get; set; } = null!;
         public DbSet<User> SocialUsers { get; set; } = null!;
         public DbSet<NewsContent> NewsContents { get; set; } = null!;
+        public DbSet<Chat> Chats { get; set; } = null!;
+        public DbSet<ChatUser> ChatsUsers { get; set; } = null!;
+        public DbSet<ChatMessage> ChatsMessages { get; set; } = null!;
+
         public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options)
         { }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<ChatUser>().HasKey(chatUser => new { chatUser.ChatId, chatUser.UserId });
+            
+            base.OnModelCreating(builder);
+        }
     }
 }
