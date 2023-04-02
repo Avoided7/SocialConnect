@@ -9,6 +9,10 @@
     {
         text-decoration: none;
     }
+    .on-hover:hover
+    {
+        cursor: pointer;
+    }
 </style>
 
 <div class="card card-body mb-3">
@@ -18,8 +22,12 @@
             string username = @message.Chat.Users.First(user => message.UserId == user.UserId).User!.UserName;
             string color = username == currentUsername ? "text-info" : "text-success";
             string textPosition = username == currentUsername ? "float: right;" : "";
-                <div class="bg-secondary mb-1" style="padding: 5px; width: 50%; clear: both; @textPosition">
+                <div id="@message.Id" class="bg-secondary mb-1" style="padding: 5px; width: 48%; clear: both; @textPosition">
                     <a class="@color link-decorator" asp-controller="Account" asp-action="Profile" asp-route-username="@username">@username</a>
+                    @if (username == currentUsername)
+                    {
+                        <i class="bi bi-x-lg text-danger on-hover" onclick="deleteMessage('@message.Id')"></i>
+                    }
                     <div>@message.Content</div>
                 </div>
         }
@@ -31,7 +39,7 @@
     <input class="btn btn-success" type="button" id="messageSend" value="Send" disabled/>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
 <script>
     const connectionHub = new signalR.HubConnectionBuilder()
                                      .withUrl("/chat?groupName=@Model.GroupName")
@@ -40,26 +48,33 @@
     const currentUsername = '@currentUsername';
     console.log(currentUsername);
     messageBody.scrollTop = messageBody.scrollHeight;
-                              
+               
+   
     document.getElementById("messageSend").addEventListener("click", function ()
     {
         const message = document.getElementById("messageContent");
         
-        connectionHub.invoke("Send", "@Model.GroupName", message.value);
-        
+        const response = fetch("/Chats/SendMessage",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ groupName: '@Model.GroupName', message: message.value })
+                        });
         message.value = "";
         message.select();
     })
                                      
-    connectionHub.on("Receive", function (username, message)
+    connectionHub.on("Receive", function (username, id, message)
     {
          
          const messageCard = document.createElement("div");
          messageCard.classList.add("bg-secondary");
          messageCard.classList.add("mb-1");
          messageCard.style.padding = "5px";
-         messageCard.style.width = "50%";
+         messageCard.style.width = "48%";
          messageCard.style.clear = "both";
+         
+         messageCard.id = id;
          
          const div = document.createElement("div");
          const link = document.createElement("a");
@@ -73,9 +88,20 @@
          link.classList.add("link-decorator");
          
          link.setAttribute("href", '@Url.ActionLink("Profile", "Account")' + "&username=" + username)
-         link.textContent = username;
+         link.textContent = username + " ";
          
          div.appendChild(link);
+         
+         if (username == currentUsername)
+         {
+             const i = document.createElement("i");
+             i.classList.add("bi");
+             i.classList.add("bi-x-lg");
+             i.classList.add("text-danger");
+             i.classList.add("on-hover");
+             i.addEventListener("click", () => deleteMessage(id))
+             div.appendChild(i);
+         }
          
          const messageDiv = document.createElement("div");
          messageDiv.textContent = message;
@@ -88,6 +114,21 @@
          
          messageBody.scrollTop = messageBody.scrollHeight;
     });
+    
+    connectionHub.on("Delete", function (id)
+    {
+       const element = document.getElementById(id);   
+       const body = document.getElementById("messages");  
+       body.removeChild(element); 
+    });
+    
+    function deleteMessage(id)
+    {
+        const response = fetch("/Chats/DeleteMessage?messageId=" + id, 
+        {
+            method: "DELETE"
+        });
+    }
     
     connectionHub.start()
                  .then(function ()

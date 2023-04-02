@@ -23,7 +23,9 @@ public class ChatRepository : IChatRepository
             .AsNoTracking()
             .Include(chat => chat.Users)
                 .ThenInclude(user => user.User)
-            .Include(chat => chat.Messages);
+            .Include(chat => chat.Messages)
+                .ThenInclude(message => message.Views)
+                    .ThenInclude(view => view.User);
     }
 
     public IEnumerable<Chat> Get(Expression<Func<Chat, bool>> expression)
@@ -33,6 +35,8 @@ public class ChatRepository : IChatRepository
             .Include(chat => chat.Users)
                 .ThenInclude(user => user.User)
             .Include(chat => chat.Messages)
+                .ThenInclude(message => message.Views)
+                    .ThenInclude(view => view.User)
             .Where(expression);
     }
     public async Task<IReadOnlyCollection<Chat>> GetAsync()
@@ -42,6 +46,8 @@ public class ChatRepository : IChatRepository
             .Include(chat => chat.Users)
                 .ThenInclude(user => user.User)
             .Include(chat => chat.Messages)
+                .ThenInclude(message => message.Views)
+                    .ThenInclude(view => view.User)
             .ToListAsync();
     }
     public async Task<IReadOnlyCollection<Chat>> GetAsync(Expression<Func<Chat, bool>> expression)
@@ -51,6 +57,8 @@ public class ChatRepository : IChatRepository
             .Include(chat => chat.Users)
                 .ThenInclude(user => user.User)
             .Include(chat => chat.Messages)
+                .ThenInclude(message => message.Views)
+                    .ThenInclude(view => view.User)
             .Where(expression)
             .ToListAsync();
     }
@@ -61,6 +69,8 @@ public class ChatRepository : IChatRepository
             .Include(chat => chat.Users)
                 .ThenInclude(user => user.User)
             .Include(chat => chat.Messages)
+                .ThenInclude(message => message.Views)
+                    .ThenInclude(view => view.User)
             .FirstOrDefaultAsync(expression);
     }
 
@@ -144,8 +154,61 @@ public class ChatRepository : IChatRepository
     public async Task<bool> CreateMessageAsync(ChatMessage message)
     {
         await _dbContext.ChatsMessages.AddAsync(message);
+
+        MessageView view = new MessageView()
+        {
+            MessageId = message.Id,
+            UserId = message.UserId
+        };
+
+        await _dbContext.MessagesViews.AddAsync(view);
+        
         await _dbContext.SaveChangesAsync();
 
+        return true;
+    }
+
+    public async Task<bool> DeleteMessageAsync(string messageId)
+    {
+        ChatMessage? message  = await _dbContext.ChatsMessages.FirstOrDefaultAsync(chatMessage => chatMessage.Id == messageId);
+        if (message == null)
+        {
+            return false;
+        }
+
+        _dbContext.ChatsMessages.Remove(message);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<ChatMessage?> GetMessageAsync(string messageId)
+    {
+        ChatMessage? message = await _dbContext.ChatsMessages
+            .Include(message => message.Views)
+                .ThenInclude(view => view.User)
+            .FirstOrDefaultAsync(message => message.Id == messageId);
+
+        return message;
+    }
+
+    public async Task<bool> AddViewToMessageAsync(MessageView view)
+    {
+        if (await _dbContext.MessagesViews.AnyAsync(messageView => messageView.MessageId == view.MessageId &&
+                                                                   messageView.UserId == view.UserId))
+        {
+            return false;
+        }
+        
+        await _dbContext.MessagesViews.AddAsync(view);
+        return true;
+    }
+
+    public async Task<bool> AddRangeViewsToMessageAsync(IEnumerable<MessageView> views)
+    {
+        await _dbContext.MessagesViews.AddRangeAsync(views);
+        await _dbContext.SaveChangesAsync();
+        
         return true;
     }
 }

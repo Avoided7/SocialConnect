@@ -7,15 +7,31 @@
 
 @foreach (Chat chat in Model)
 {
-    <div class="card card-body">
+    ChatMessage? message = chat.Messages.LastOrDefault();
+    User? messageOwner = message == null ? null : chat.Users.FirstOrDefault(user => user.UserId == message.UserId)?.User;
+    string? username = message?.UserId == userId ? "You" : messageOwner?.UserName;
+    int messageCount = @chat.Messages.Count(message => message.UserId != userId && message.Views.All(view => view.UserId != userId));
+    <div class="card card-body mb-2">
         @if (chat.IsCoupleChat)
         {
             <a asp-action="Index" asp-route-chatId="@chat.Id" style="text-decoration: none;"><h4>@chat.Users.First(chatUser => chatUser.UserId != userId).User!.UserName</h4></a>
+            if (messageCount > 0)
+            {
+                <text>@messageCount unreaded</text>
+            }
             <hr/>
         }
 
-        <span style="font-style: italic;">
-            @chat.Messages.Count() messages
+        <span>
+            @if (message == null)
+            {
+                <text>Nothing here;3</text>
+            }
+            else
+            {
+                <b>@(username): </b>@message.Content
+            }
+            
             @if (!chat.IsCoupleChat)
             {
                 <text>, @chat.Users.Count() users</text>

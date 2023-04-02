@@ -19,7 +19,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SocialConnect.WebUI.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-</head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    
+    </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light navbar-dark border-bottom box-shadow mb-3">
@@ -42,6 +44,7 @@
                         <li class="nav-item dropdown" style="margin-right: 150px;">
                             @if (isAuthenticated)
                             {
+                                <i class="bi bi-bell" id="notification">0</i>
                                 <a class="text-light dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="text-decoration: none;"><b>@username</b></a>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" asp-controller="Account" asp-action="Settings">Settings</a>
@@ -67,11 +70,11 @@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <div class="card card-body">
-                            <a class="btn btn-outline-info mb-2" asp-controller="Account" asp-action="Profile">Profile </a>
-                            <a class="btn btn-outline-info mb-2" asp-controller="News" asp-action="All">News </a>
-                            <a class="btn btn-outline-info mb-2" asp-controller="Friends" asp-action="All">Friends <friends-request user-id="@userId"/></a>
-                            <a class="btn btn-outline-info mb-2" asp-controller="Groups" asp-action="All">Groups <groups-request user-id="@userId"/></a>
-                            <a class="btn btn-outline-info mb-2" asp-controller="Chats" asp-action="All">Chats</a>
+                            <a class="btn btn-outline-light mb-2" asp-controller="Account" asp-action="Profile">Profile </a>
+                            <a class="btn btn-outline-light mb-2" asp-controller="News" asp-action="All">News </a>
+                            <a class="btn btn-outline-light mb-2" asp-controller="Friends" asp-action="All">Friends <friends-request user-id="@userId"/></a>
+                            <a class="btn btn-outline-light mb-2" asp-controller="Groups" asp-action="All">Groups <groups-request user-id="@userId"/></a>
+                            <a class="btn btn-outline-light mb-2" asp-controller="Chats" asp-action="All">Chats <chat-messages user-id="@userId"/></a>
                         </div>
                     }
                 </div>
@@ -86,7 +89,7 @@
             </div>
         </main>
     </div>
-    @*
+@*
     <footer class="border-top footer text-muted">
         
         <div class="container">
@@ -97,7 +100,22 @@
      *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    const notificationHub = new signalR.HubConnectionBuilder()
+                                       .withUrl("/notification")
+                                       .build()
+    
+    notificationHub.on("Receive", function (message)
+    {
+        const notification = document.getElementById("notification");
+        notification.textContent = +notification.textContent + 1
+    })
+    
+    notificationHub.start();
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

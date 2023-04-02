@@ -19,5 +19,6 @@ namespace SocialConnect.Domain.Entities
         public virtual IList<GroupUser> Groups { get; set; } = null!;
         public virtual IList<News> News { get; set; } = null!;
         public virtual IList<ChatUser> Chats { get; set; } = null!;
+        public virtual IList<MessageView> MessageViews { get; set; } = null!;
     }
 }

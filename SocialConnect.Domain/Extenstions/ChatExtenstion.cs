@@ -5,7 +5,7 @@ namespace SocialConnect.Domain.Extenstions;
 
 public static class ChatExtenstion
 {
-    public static async Task<bool> SendMessageByGroupNameAsync(this IChatRepository chatRepository,
+    public static async Task<string> SendMessageByGroupNameAsync(this IChatRepository chatRepository,
                                                           string groupName,
                                                           string userId,
                                                           string content)
@@ -14,7 +14,7 @@ public static class ChatExtenstion
 
         if (chat == null)
         {
-            return false;
+            return string.Empty;
         }
         
         ChatMessage message = new()
@@ -25,6 +25,32 @@ public static class ChatExtenstion
 
         };
 
-        return await chatRepository.CreateMessageAsync(message);
+        await chatRepository.CreateMessageAsync(message);
+        
+        return message.Id;
+    }
+
+    public static async Task<string?> GetGroupNameByChatIdAsync(this IChatRepository chatRepository,
+        string chatId)
+    {
+        Chat? chat = await chatRepository.FirstOrDefaultAsync(chat => chat.Id == chatId);
+
+        return chat?.GroupName;
+    }
+
+    public static async Task<bool> ReadAllMessagesAsync(this IChatRepository chatRepository,
+        string chatId,
+        string userId)
+    {
+        Chat? chat = await chatRepository.FirstOrDefaultAsync(chat => chat.Id == chatId);
+        if (chat == null)
+        {
+            return false;
+        }
+
+        IEnumerable<MessageView> messages = chat.Messages.Where(message => message.Views.All(view => view.UserId != userId))
+                                                         .Select(message => new MessageView() { MessageId = message.Id, UserId = userId});
+
+        return await chatRepository.AddRangeViewsToMessageAsync(messages);
     }
 }

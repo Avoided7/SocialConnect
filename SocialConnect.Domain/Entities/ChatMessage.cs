@@ -13,4 +13,6 @@ public class ChatMessage : IEntity
     // Relations
     public string ChatId { get; set; } = string.Empty;
     public Chat Chat { get; set; } = null!;
+
+    public virtual IList<MessageView> Views { get; set; } = null!;
 }

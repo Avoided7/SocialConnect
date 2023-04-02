@@ -84,12 +84,12 @@ app.UseAuthorization();
 
 app.UseSession();
 
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=News}/{action=All}");
 
 app.MapHub<ChatHub>("/chat");
+app.MapHub<NotificationHub>("/notification");
 
 app.SeedRoles();
 
