@@ -19,14 +19,29 @@ namespace SocialConnect.Infrastructure.Data
         public DbSet<ChatUser> ChatsUsers { get; set; } = null!;
         public DbSet<ChatMessage> ChatsMessages { get; set; } = null!;
         public DbSet<MessageView> MessagesViews { get; set; } = null!;
+        public DbSet<Status> UsersStatus { get; set; } = null!;
 
         public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options)
         { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<ChatUser>().HasKey(chatUser => new { chatUser.ChatId, chatUser.UserId });
-            builder.Entity<MessageView>().HasKey(messageView => new { messageView.MessageId, messageView.UserId });
+            builder
+                .Entity<ChatUser>()
+                .HasKey(chatUser => new { chatUser.ChatId, chatUser.UserId });
+            builder
+                .Entity<MessageView>()
+                .HasKey(messageView => new { messageView.MessageId, messageView.UserId });
+
+            builder
+                .Entity<Status>()
+                .HasOne(status => status.User)
+                .WithOne(user => user.Status);
+
+            builder
+                .Entity<User>()
+                .HasOne(user => user.Status)
+                .WithOne(status => status.User);
             
             base.OnModelCreating(builder);
         }

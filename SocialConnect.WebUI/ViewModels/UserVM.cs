@@ -11,6 +11,7 @@ namespace SocialConnect.WebUI.ViewModels
         public string Username { get; set; } = string.Empty;
         public bool IsAgreed { get; set; }
 
+        public bool OnlineStatus { get; set; }
         public FriendStatus Status { get; set; } = FriendStatus.Noname;
     }
 }

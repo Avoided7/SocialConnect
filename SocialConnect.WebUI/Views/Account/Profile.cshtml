@@ -4,6 +4,7 @@
     ViewData["Title"] = Model.UserName;
     string userId = User.GetUserId() ?? string.Empty;
     IReadOnlyCollection<News> allNews = Model.News.Where(news => news.GroupId == null).OrderByDescending(news => news.WrittenIn).ToList();
+    string status = @Model.Status.IsOnline ? "-fill" : "";
 }
 
 <style>
@@ -28,6 +29,7 @@
 <div class="card mb-3">
     <div class="card-body">
         <h3>@Model.UserName</h3>
+        <div>Status: <i class="bi bi-circle@(status) text-success" id="@Model.Id"></i></div>
         @if (userId != Model.Id)
         {
             <a class="btn btn-success" asp-controller="Chats" asp-action="Create" asp-route-username="@Model.UserName">Send message</a>
@@ -46,3 +48,21 @@
         @(await Html.PartialAsync("_LoadNews", news))
     }
 }
+
+<script>
+notificationHub.on("ChangeStatus", function (userId, status)
+{
+     const statusElement = document.getElementById(userId);
+     
+     const alreadyOnline = statusElement.classList.contains("bi-circle-fill")
+     if (alreadyOnline && !status)
+     {
+           statusElement.classList.replace("bi-circle-fill", "bi-circle");
+     }
+     
+     if (!alreadyOnline && status)
+     {
+        statusElement.classList.replace("bi-circle", "bi-circle-fill");   
+     }
+});
+</script>

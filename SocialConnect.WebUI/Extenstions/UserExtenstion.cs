@@ -19,6 +19,7 @@ namespace SocialConnect.WebUI.Extenstions
                 UserVM userVm = new UserVM
                 { 
                     Id = user.Id,
+                    OnlineStatus = user.Status.IsOnline,
                     Firstname = user.Firstname,
                     Lastname = user.Lastname,
                     Username = user.UserName

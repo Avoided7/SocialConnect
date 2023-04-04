@@ -23,6 +23,13 @@ public class ChatTagHelper : TagHelper
             chat.Messages.Any(message =>
                 message.Views.All(view =>
                     view.UserId != UserId)));
+        int chatsCount = chats.Count();
+        if (chatsCount == 0)
+        {
+            output.SuppressOutput();
+            return;
+        }
+        
         output.TagMode = TagMode.StartTagAndEndTag;
         
         output.TagName = "span";
@@ -30,6 +37,6 @@ public class ChatTagHelper : TagHelper
         output.AddClass("bg-warning", HtmlEncoder.Default);
         output.AddClass("rounded-pill", HtmlEncoder.Default);
         output.AddClass("align-middle", HtmlEncoder.Default);
-        output.Content.SetContent(chats.Count().ToString());
+        output.Content.SetContent(chatsCount.ToString());
     }
 }

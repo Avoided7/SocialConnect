@@ -52,7 +52,7 @@ namespace SocialConnect.Infrastructure.Repositories
                 IReadOnlyCollection<User> friends = await _dbContext.Friends
                                                                             .Where(friend => (!friend.IsAgreed && (friend.FriendId == userId || friend.UserId == userId)) || 
                                                                                                         (friend.IsAgreed && friend.FriendId == userId))
-                                                                            .Select(friend => _dbContext.SocialUsers.First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)))
+                                                                            .Select(friend => _dbContext.SocialUsers.Include(user => user.Status).First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)))
                                                                             .ToListAsync();
                 return friends;
             }

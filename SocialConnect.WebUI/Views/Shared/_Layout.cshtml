@@ -23,6 +23,13 @@
     
     </head>
 <body>
+    <script>
+        const notificationHub = new signalR.HubConnectionBuilder()
+                                           .withUrl("/notification")
+                                           .build()
+        
+        notificationHub.start();
+    </script>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light navbar-dark border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -100,22 +107,24 @@
      *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-
+    <script src="~/js/site.js" asp-append-version="true"></script>
 <script>
-    const notificationHub = new signalR.HubConnectionBuilder()
-                                       .withUrl("/notification")
-                                       .build()
-    
-    notificationHub.on("Receive", function (message)
+notificationHub.on("ChangeStatus", function (userId, status)
+{
+    const element = document.getElementById(userId);
+    console.log(element);
+    if (status)
     {
-        const notification = document.getElementById("notification");
-        notification.textContent = +notification.textContent + 1
-    })
-    
-    notificationHub.start();
+        element.classList.replace("bi-circle", "bi-circle-fill");
+        element.classList.replace("text-danger", "text-success");
+    }
+    else
+    {
+        element.classList.replace("bi-circle-fill", "bi-circle");   
+        element.classList.replace("text-success", "text-danger");
+    }
+});
 </script>
-
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

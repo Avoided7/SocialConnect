@@ -44,9 +44,11 @@ else
         </div>
         @foreach (UserVM user in Model.WaitedResponse)
         {
+            string status = user.OnlineStatus ? "-fill text-success" : " text-danger";
             <div class="card border-success mb-3">
                 <div class="card-body">
                     <a class="response main" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
+                    <i class="bi bi-circle@(status)" id="@user.Id"></i>
 
                     <div class="float-end">
                         <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
@@ -71,9 +73,11 @@ else
         </div>
         @foreach (UserVM user in Model.Friends)
         {
+            string status = user.OnlineStatus ? "-fill text-success" : " text-danger";
             <div class="card border-light mb-3">
                 <div class="card-body">
                     <a class="friend main" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
+                    <i class="bi bi-circle@(status)" id="@user.Id"></i>
 
                     <div class="float-end">
                         <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
@@ -97,10 +101,11 @@ else
         </div>
         @foreach (UserVM user in Model.SendedRequest)
         {
+            string status = user.OnlineStatus ? "-fill text-success" : " text-danger";
             <div class="card border-info mb-3">
                 <div class="card-body">
                     <a class="request main" asp-controller="Account" asp-action="Profile" asp-route-username="@user.Username">@user.Username</a>
-
+                    <i class="bi bi-circle@(status)" id="@user.Id"></i>
                     <div class="float-end">
                         <a class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@user.Status</a>
                         <div class="dropdown-menu">
@@ -117,3 +122,8 @@ else
         <hr/>
     }
 }
+
+
+<script>
+    
+</script>

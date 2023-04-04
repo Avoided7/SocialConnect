@@ -22,7 +22,8 @@ public class ChatRepository : IChatRepository
         return _dbContext.Chats
             .AsNoTracking()
             .Include(chat => chat.Users)
-                .ThenInclude(user => user.User)
+                .ThenInclude(chatUser => chatUser.User)
+                    .ThenInclude(user => user!.Status)
             .Include(chat => chat.Messages)
                 .ThenInclude(message => message.Views)
                     .ThenInclude(view => view.User);
@@ -33,7 +34,8 @@ public class ChatRepository : IChatRepository
         return _dbContext.Chats
             .AsNoTracking()
             .Include(chat => chat.Users)
-                .ThenInclude(user => user.User)
+                .ThenInclude(chatUser => chatUser.User)
+                    .ThenInclude(user => user!.Status)
             .Include(chat => chat.Messages)
                 .ThenInclude(message => message.Views)
                     .ThenInclude(view => view.User)
@@ -44,7 +46,8 @@ public class ChatRepository : IChatRepository
         return await _dbContext.Chats
             .AsNoTracking()
             .Include(chat => chat.Users)
-                .ThenInclude(user => user.User)
+                .ThenInclude(chatUser => chatUser.User)
+                    .ThenInclude(user => user!.Status)
             .Include(chat => chat.Messages)
                 .ThenInclude(message => message.Views)
                     .ThenInclude(view => view.User)
@@ -55,7 +58,8 @@ public class ChatRepository : IChatRepository
         return await _dbContext.Chats
             .AsNoTracking()
             .Include(chat => chat.Users)
-                .ThenInclude(user => user.User)
+                .ThenInclude(chatUser => chatUser.User)
+                    .ThenInclude(user => user!.Status)
             .Include(chat => chat.Messages)
                 .ThenInclude(message => message.Views)
                     .ThenInclude(view => view.User)
@@ -67,7 +71,8 @@ public class ChatRepository : IChatRepository
         return await _dbContext.Chats
             .AsNoTracking()
             .Include(chat => chat.Users)
-                .ThenInclude(user => user.User)
+                .ThenInclude(chatUser => chatUser.User)
+                    .ThenInclude(user => user!.Status)
             .Include(chat => chat.Messages)
                 .ThenInclude(message => message.Views)
                     .ThenInclude(view => view.User)
@@ -211,4 +216,5 @@ public class ChatRepository : IChatRepository
         
         return true;
     }
+
 }
