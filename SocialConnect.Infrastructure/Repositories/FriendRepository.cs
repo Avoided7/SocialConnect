@@ -101,6 +101,13 @@ namespace SocialConnect.Infrastructure.Repositories
                 return null;
             }
 
+            FriendsCouple? friendsCouple = await _dbContext.Friends.FirstOrDefaultAsync(friend => (friend.UserId == entity.UserId &&
+                                                                                                  friend.FriendId == entity.FriendId));    
+            if(friendsCouple != null)
+            {
+                return null;
+            }
+
             await _dbContext.Friends.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             return entity;

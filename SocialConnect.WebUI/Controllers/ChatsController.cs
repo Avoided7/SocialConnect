@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Extenstions;
 using SocialConnect.Domain.Interfaces;
+using SocialConnect.WebUI.Enums;
 using SocialConnect.WebUI.Extenstions;
 using SocialConnect.WebUI.Hubs;
 using SocialConnect.WebUI.ViewModels;
@@ -69,6 +70,7 @@ namespace SocialConnect.WebUI.Controllers
             return View(chat);
         }
 
+        [HttpPost]
         public async Task<IActionResult> Create(string username)
         {
             User? user = await _userRepository.FindByUsernameAsync(username);
@@ -77,17 +79,21 @@ namespace SocialConnect.WebUI.Controllers
             {
                 return BadRequest();
             }
-
-            Chat chat = new()
+            Chat? chat = await _chatRepository.FirstOrDefaultAsync(chat => chat.IsCoupleChat &&
+                                                                           chat.Users.Any(chatUser => chatUser.UserId == currentUserId) &&
+                                                                           chat.Users.Any(chatUser => chatUser.UserId == user.Id));
+            if (chat == null)
             {
-                GroupName = Guid.NewGuid().ToString(),
-                IsCoupleChat = true
-            };
-            await _chatRepository.CreateAsync(chat);
-            
-            await _chatRepository.AddUserToChatAsync(chat.Id, user.Id);
-            await _chatRepository.AddUserToChatAsync(chat.Id, currentUserId);
+                chat = new()
+                {
+                    GroupName = Guid.NewGuid().ToString(),
+                    IsCoupleChat = true
+                };
+                await _chatRepository.CreateAsync(chat);
 
+                await _chatRepository.AddUserToChatAsync(chat.Id, user.Id);
+                await _chatRepository.AddUserToChatAsync(chat.Id, currentUserId);
+            }
             return RedirectToAction(nameof(Index), new { chatId = chat.Id });
         }
 
@@ -124,7 +130,7 @@ namespace SocialConnect.WebUI.Controllers
                       .Select(user => user.UserId!)
                       .ToList();
 
-            await _notificationContext.Clients.Users(users).SendAsync("receive", message);
+            await _notificationContext.Clients.Users(users).SendAsync("Receive", NotificationType.Message.ToString(), message);
             
             return Ok();
         }
@@ -156,8 +162,17 @@ namespace SocialConnect.WebUI.Controllers
                 throw new Exception("Undefined group name.");
             }
 
+            string? friendId = message.Chat.Users.First(user => user.UserId != userId).UserId;
+
+            if (friendId == null)
+            {
+                throw new Exception("Friend id cannot be null!");
+            }
+            
+            await _notificationContext.Clients.User(friendId).SendAsync("Receive", NotificationType.Message.ToString(), friendId);
             await _chatContext.Clients.Group(groupName).SendAsync("Delete", messageId);
             return Ok();
         }
+
     }
 }

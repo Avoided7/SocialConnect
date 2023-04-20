@@ -112,7 +112,6 @@
 notificationHub.on("ChangeStatus", function (userId, status)
 {
     const element = document.getElementById(userId);
-    console.log(element);
     if (status)
     {
         element.classList.replace("bi-circle", "bi-circle-fill");
@@ -124,6 +123,50 @@ notificationHub.on("ChangeStatus", function (userId, status)
         element.classList.replace("text-success", "text-danger");
     }
 });
+
+notificationHub.on("Receive", async function (notificationType, content) {
+    let element;
+    let uri;
+
+    if(notificationType == "FriendRequest")
+    {
+        element = document.getElementById("friends");
+
+        uri = "/Notifications/GetUserFriendsRequestsCount";
+    }
+
+    if(notificationType == "Message")
+    {
+        element = document.getElementById("chats");
+
+        uri = "/Notifications/GetUserChatsCount";
+    }
+
+    if(element.hasAttribute("hidden"))
+    {
+        element.removeAttribute("hidden");
+    }
+
+    const response = await fetch(uri,
+        {
+            method: "GET"
+        });
+
+    const jsonData = await response.json();
+
+    if(jsonData == 0)
+    {
+        element.hidden = "hidden";
+        element.textContent = 0;
+    }
+    else
+    {
+        element.textContent = jsonData;
+    }
+
+            
+});
+
 </script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>

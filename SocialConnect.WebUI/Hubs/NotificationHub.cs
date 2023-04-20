@@ -8,6 +8,7 @@ namespace SocialConnect.WebUI.Hubs;
 public class NotificationHub : Hub
 {
     private readonly IUserRepository _userRepository;
+    private static readonly Dictionary<string, int> _users = new Dictionary<string, int>();
 
     public NotificationHub(IUserRepository userRepository)
     {
@@ -15,14 +16,48 @@ public class NotificationHub : Hub
     }
     public override async Task OnConnectedAsync()
     {
-        await ChangeUserStatusAsync(true);
-        
+        string? userId = this.Context.User?.GetUserId();
+
+        if(userId == null)
+        {
+            return;
+        }
+
+        if(_users.ContainsKey(userId))
+        {
+            _users[userId]++;
+        }
+        else
+        {
+            _users.Add(userId, 1);
+            await ChangeUserStatusAsync(true);
+        }
+
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        await ChangeUserStatusAsync(false);
+        string? userId = this.Context.User?.GetUserId();
+
+        if (userId == null)
+        {
+            return;
+        }
+
+        if (_users.ContainsKey(userId))
+        {
+            if (_users[userId] == 1)
+            {
+                await ChangeUserStatusAsync(false);
+                _users.Remove(userId);
+            }
+            else
+            {
+                _users[userId]--;
+            }    
+        }
+
         
         await base.OnDisconnectedAsync(exception);
     }

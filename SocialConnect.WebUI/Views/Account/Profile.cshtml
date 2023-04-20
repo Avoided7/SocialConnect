@@ -32,7 +32,9 @@
         <div>Status: <i class="bi bi-circle@(status) text-success" id="@Model.Id"></i></div>
         @if (userId != Model.Id)
         {
-            <a class="btn btn-success" asp-controller="Chats" asp-action="Create" asp-route-username="@Model.UserName">Send message</a>
+            <form method="post" asp-controller="Chats" asp-action="Create" asp-route-username="@Model.UserName">
+                <button class="btn btn-success" type="submit">Send message</button>
+            </form>
         }
         <hr/>
         <b>Birthday: @Model.DateOfBirth.ToShortDateString()</b>

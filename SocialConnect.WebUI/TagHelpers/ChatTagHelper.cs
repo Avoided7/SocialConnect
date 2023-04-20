@@ -26,10 +26,11 @@ public class ChatTagHelper : TagHelper
         int chatsCount = chats.Count();
         if (chatsCount == 0)
         {
-            output.SuppressOutput();
-            return;
+            output.Attributes.SetAttribute("hidden", "hidden");
         }
-        
+
+        output.Attributes.SetAttribute("id", "chats");
+
         output.TagMode = TagMode.StartTagAndEndTag;
         
         output.TagName = "span";

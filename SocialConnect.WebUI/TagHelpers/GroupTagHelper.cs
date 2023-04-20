@@ -25,9 +25,11 @@ public class GroupTagHelper : TagHelper
 
         if (count == 0)
         {
-            output.SuppressOutput();
-            return;
+            output.Attributes.SetAttribute("hidden", "hidden");
         }
+
+        output.Attributes.SetAttribute("id", "groups");
+
         output.TagMode = TagMode.StartTagAndEndTag;
         
         output.TagName = "span";

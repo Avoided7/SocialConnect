@@ -129,7 +129,19 @@ public class ChatRepository : IChatRepository
     }
 
     #endregion
-    
+
+    public async Task<ChatMessage?> GetMessageAsync(string messageId)
+    {
+        ChatMessage? message = await _dbContext.ChatsMessages
+            .Include(message => message.Views)
+                .ThenInclude(view => view.User)
+            .Include(message => message.Chat)
+                .ThenInclude(chat => chat.Users)
+            .FirstOrDefaultAsync(message => message.Id == messageId);
+
+        return message;
+    }
+
     public async Task<bool> AddUserToChatAsync(string chatId, string userId)
     {
         if (!await _dbContext.Chats.AnyAsync(chat => chat.Id == chatId))
@@ -185,16 +197,6 @@ public class ChatRepository : IChatRepository
         await _dbContext.SaveChangesAsync();
 
         return true;
-    }
-
-    public async Task<ChatMessage?> GetMessageAsync(string messageId)
-    {
-        ChatMessage? message = await _dbContext.ChatsMessages
-            .Include(message => message.Views)
-                .ThenInclude(view => view.User)
-            .FirstOrDefaultAsync(message => message.Id == messageId);
-
-        return message;
     }
 
     public async Task<bool> AddViewToMessageAsync(MessageView view)

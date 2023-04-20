@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SocialConnect.Domain.Entities;
 
 namespace SocialConnect.Infrastructure.Data
@@ -26,24 +28,9 @@ namespace SocialConnect.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder
-                .Entity<ChatUser>()
-                .HasKey(chatUser => new { chatUser.ChatId, chatUser.UserId });
-            builder
-                .Entity<MessageView>()
-                .HasKey(messageView => new { messageView.MessageId, messageView.UserId });
-
-            builder
-                .Entity<Status>()
-                .HasOne(status => status.User)
-                .WithOne(user => user.Status);
-
-            builder
-                .Entity<User>()
-                .HasOne(user => user.Status)
-                .WithOne(status => status.User);
-            
             base.OnModelCreating(builder);
+
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

@@ -2,6 +2,8 @@
 
 @{
     string currentUsername = User.Identity?.Name ?? "";
+    string userId = User.GetUserId() ?? "";
+    User? user = Model.Users.First(user => user.UserId != userId).User;
 }
 
 <style>
@@ -14,7 +16,14 @@
         cursor: pointer;
     }
 </style>
-
+<div class="card card-body mb-3">
+    <div class="card-text">
+        @if (Model.IsCoupleChat)
+        {
+            <h3><a asp-controller="Account" asp-action="Profile" asp-route-username="@user?.UserName">@user?.UserName</a></h3>
+        }
+    </div>
+</div>
 <div class="card card-body mb-3">
     <div id="messages" style="height: 400px; overflow: auto;">
         @foreach (ChatMessage message in Model.Messages)

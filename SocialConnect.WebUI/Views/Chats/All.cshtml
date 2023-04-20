@@ -7,7 +7,7 @@
 
 @foreach (Chat chat in Model)
 {
-    ChatMessage? message = chat.Messages.LastOrDefault();
+    ChatMessage? message = chat.Messages.MaxBy(message => message.WrittenAt);
     User? messageOwner = message == null ? null : chat.Users.FirstOrDefault(user => user.UserId == message.UserId)?.User;
     string? username = message?.UserId == userId ? "You" : messageOwner?.UserName;
     int messageCount = @chat.Messages.Count(message => message.UserId != userId && message.Views.All(view => view.UserId != userId));
