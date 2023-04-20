@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SocialConnect.Domain.Entities;
 
 namespace SocialConnect.Infrastructure.Data
@@ -15,8 +17,20 @@ namespace SocialConnect.Infrastructure.Data
         public DbSet<NewsLike> NewsLikes { get; set; } = null!;
         public DbSet<User> SocialUsers { get; set; } = null!;
         public DbSet<NewsContent> NewsContents { get; set; } = null!;
+        public DbSet<Chat> Chats { get; set; } = null!;
+        public DbSet<ChatUser> ChatsUsers { get; set; } = null!;
+        public DbSet<ChatMessage> ChatsMessages { get; set; } = null!;
+        public DbSet<MessageView> MessagesViews { get; set; } = null!;
+        public DbSet<Status> UsersStatus { get; set; } = null!;
+
         public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options)
         { }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        }
     }
 }

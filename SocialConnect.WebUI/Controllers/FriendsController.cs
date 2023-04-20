@@ -5,8 +5,10 @@ using SocialConnect.Domain.Interfaces;
 using SocialConnect.WebUI.Extenstions;
 using System.Security.Claims;
 using SocialConnect.WebUI.ViewModels;
-using SocialConnect.WebUI.ViewModels.Enums;
 using SocialConnect.Domain.Extenstions;
+using SocialConnect.WebUI.Enums;
+using Microsoft.AspNetCore.SignalR;
+using SocialConnect.WebUI.Hubs;
 
 namespace SocialConnect.WebUI.Controllers
 {
@@ -14,10 +16,13 @@ namespace SocialConnect.WebUI.Controllers
     public class FriendsController : Controller
     {
         private readonly IFriendRepository _friendRepository;
+        private readonly IHubContext<NotificationHub> _notificationContext;
 
-        public FriendsController(IFriendRepository friendRepository)
+        public FriendsController(IFriendRepository friendRepository,
+                                 IHubContext<NotificationHub> notificationContext)
         {
             this._friendRepository = friendRepository;
+            this._notificationContext = notificationContext;
         }
         [HttpGet]
         public async Task<IActionResult> All(string type = "all")
@@ -46,8 +51,7 @@ namespace SocialConnect.WebUI.Controllers
         [HttpGet("{action}/{friendId}")]
         public async Task<IActionResult> Add(string friendId)
         {
-            string? userId = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
-
+            string? userId = User.GetUserId();
             if (userId == null)
             {
                 return BadRequest();
@@ -59,7 +63,12 @@ namespace SocialConnect.WebUI.Controllers
                 UserId = userId
             };
 
-            await _friendRepository.CreateAsync(friendRequest);
+            FriendsCouple? friendsCouple = await _friendRepository.CreateAsync(friendRequest);
+
+            if(friendsCouple != null)
+            {
+                await _notificationContext.Clients.User(friendsCouple.FriendId).SendAsync("Receive", NotificationType.FriendRequest.ToString(), userId);
+            }
 
             return Redirect(Request.Headers["Referer"]);
         }
@@ -117,6 +126,8 @@ namespace SocialConnect.WebUI.Controllers
                 return View("Error", error);
             }
 
+            await _notificationContext.Clients.User(friendId).SendAsync("Receive", NotificationType.FriendRequest.ToString(), friendId);
+
             return Redirect(Request.Headers["Referer"]);
         }
         [HttpGet("{action}/{friendId}")]
@@ -144,7 +155,7 @@ namespace SocialConnect.WebUI.Controllers
                 };
                 return View("Error", error);
             }
-
+            
             return Redirect(Request.Headers["Referer"]);
         }
     }

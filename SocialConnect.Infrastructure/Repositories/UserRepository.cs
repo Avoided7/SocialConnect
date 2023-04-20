@@ -23,18 +23,45 @@ namespace SocialConnect.Infrastructure.Repositories
 
         public IEnumerable<User> Get()
         {
-            return _dbContext.SocialUsers.AsNoTracking();
+            return _dbContext.SocialUsers
+                .AsNoTracking()
+                .Include(user => user.Friends)
+                .Include(user => user.Status)
+                .Include(user => user.News)
+                    .ThenInclude(news => news.Contents)
+                .Include(user => user.News)
+                    .ThenInclude(news => news.Likes)
+                .Include(user => user.News)
+                    .ThenInclude(news => news.Comments)
+                        .ThenInclude(comment => comment.Likes)
+                .Include(user => user.Groups)
+                    .ThenInclude(groupUser => groupUser.Group);
         }
 
         public IEnumerable<User> Get(Expression<Func<User, bool>> expression)
         {
-            return _dbContext.SocialUsers.AsNoTracking().Where(expression);
+            return _dbContext.SocialUsers
+                .AsNoTracking()
+                .Include(user => user.Friends)
+                .Include(user => user.Status)
+                .Include(user => user.News)
+                    .ThenInclude(news => news.Contents)
+                .Include(user => user.News)
+                    .ThenInclude(news => news.Likes)
+                .Include(user => user.News)
+                    .ThenInclude(news => news.Comments)
+                        .ThenInclude(comment => comment.Likes)
+                .Include(user => user.Groups)
+                    .ThenInclude(groupUser => groupUser.Group)
+                .Where(expression);
         }
 
         public async Task<IReadOnlyCollection<User>> GetAsync()
         {
-            return await _dbContext.SocialUsers.AsNoTracking()
+            return await _dbContext.SocialUsers
+                                           .AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.Status)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Contents)
                                            .Include(user => user.News)
@@ -44,14 +71,15 @@ namespace SocialConnect.Infrastructure.Repositories
                                                     .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
                                                 .ThenInclude(groupUser => groupUser.Group)
-                                           .AsNoTracking()
                                            .ToListAsync();
         }
 
         public async Task<IReadOnlyCollection<User>> GetAsync(Expression<Func<User, bool>> expression)
         {
-            return await _dbContext.SocialUsers.AsNoTracking()
+            return await _dbContext.SocialUsers
+                                           .AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.Status)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Contents)
                                            .Include(user => user.News)
@@ -61,15 +89,16 @@ namespace SocialConnect.Infrastructure.Repositories
                                                     .ThenInclude(comment => comment.Likes)
                                            .Include(user => user.Groups)
                                                 .ThenInclude(groupUser => groupUser.Group)
-                                           .AsNoTracking()
                                            .Where(expression)
                                            .ToListAsync();
         }
 
         public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> expression)
         {
-            return await _dbContext.SocialUsers.AsNoTracking()
+            return await _dbContext.SocialUsers
+                                           .AsNoTracking()
                                            .Include(user => user.Friends)
+                                           .Include(user => user.Status)
                                            .Include(user => user.News)
                                                 .ThenInclude(news => news.Contents)
                                            .Include(user => user.News)
@@ -89,6 +118,14 @@ namespace SocialConnect.Infrastructure.Repositories
         public async Task<User?> CreateAsync(User entity)
         {
             await _dbContext.SocialUsers.AddAsync(entity);
+
+            Status status = new()
+            {
+                UserId = entity.Id,
+            };
+            
+            await _dbContext.UsersStatus.AddAsync(status);
+            
             await _dbContext.SaveChangesAsync();
             return entity;
         }
@@ -160,6 +197,32 @@ namespace SocialConnect.Infrastructure.Repositories
             return user;
         }
 
+        
+        public async Task<Status?> GetUserStatusAsync(string userId)
+        {
+            Status? status = await _dbContext.UsersStatus.FirstOrDefaultAsync(userStatus => userStatus.UserId == userId);
+
+            return status;
+        }
+
+        public async Task<bool> UpdateUserStatusAsync(string userId, Status status)
+        {
+            Status? existedStatus = await _dbContext.UsersStatus.FirstOrDefaultAsync(userStatus => userStatus.UserId == userId);
+
+            if (existedStatus == null)
+            {
+                return false;
+            }
+
+            existedStatus.IsOnline = status.IsOnline;
+            existedStatus.LastSeenOnline = status.LastSeenOnline;
+
+            _dbContext.Update(existedStatus);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
+        
         #endregion
     }
 }

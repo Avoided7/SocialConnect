@@ -98,7 +98,7 @@ namespace SocialConnect.WebUI.Controllers
 
             return Redirect(Request.Headers["Referer"]);
         }
-        [HttpGet]
+        [HttpGet("{controller}/{action}/{groupName}")]
         public async Task<IActionResult> Info(string groupName)
         {
             Group? group = await _groupRepository.FirstOrDefaultAsync(group => group.Name == groupName);

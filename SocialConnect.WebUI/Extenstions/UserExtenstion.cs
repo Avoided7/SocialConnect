@@ -1,6 +1,6 @@
 ﻿using SocialConnect.Domain.Entities;
+using SocialConnect.WebUI.Enums;
 using SocialConnect.WebUI.ViewModels;
-using SocialConnect.WebUI.ViewModels.Enums;
 using System.Security.Claims;
 
 namespace SocialConnect.WebUI.Extenstions
@@ -19,6 +19,7 @@ namespace SocialConnect.WebUI.Extenstions
                 UserVM userVm = new UserVM
                 { 
                     Id = user.Id,
+                    OnlineStatus = user.Status.IsOnline,
                     Firstname = user.Firstname,
                     Lastname = user.Lastname,
                     Username = user.UserName

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using SocialConnect.Domain.Enums;
 using SocialConnect.Shared;
 
@@ -18,5 +19,11 @@ namespace SocialConnect.Domain.Entities
         public virtual IList<FriendsCouple> Friends { get; set; } = null!;
         public virtual IList<GroupUser> Groups { get; set; } = null!;
         public virtual IList<News> News { get; set; } = null!;
+        public virtual IList<ChatUser> Chats { get; set; } = null!;
+        public virtual IList<MessageView> MessageViews { get; set; } = null!;
+
+        public string StatusId { get; set; } = string.Empty;
+        [ForeignKey("StatusId")]
+        public virtual Status Status { get; set; } = null!;
     }
 }

@@ -7,5 +7,7 @@ namespace SocialConnect.Domain.Interfaces
     {
         Task<User?> FindByIdAsync(string id);
         Task<User?> FindByUsernameAsync(string username);
+        Task<bool> UpdateUserStatusAsync(string userId, Status status);
+        Task<Status?> GetUserStatusAsync(string userId);
     }
 }

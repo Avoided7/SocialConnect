@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SocialConnect.WebUI.ViewModels.Enums
+namespace SocialConnect.WebUI.Enums
 {
     public enum FriendStatus
     {

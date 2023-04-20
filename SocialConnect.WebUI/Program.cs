@@ -6,6 +6,7 @@ using SocialConnect.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using SocialConnect.Infrastructure.Repositories;
 using SocialConnect.Infrastructure.Services;
+using SocialConnect.WebUI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,16 +53,24 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IBlobService, BlobService>();
 
+// Azure Blobs
 string blobConnectionString = builder.Configuration.GetConnectionString("BlobConnectionString");
 builder.Services.AddSingleton(new BlobServiceClient(blobConnectionString));
 
+// Email service
 builder.Services.AddSingleton<IMailKitEmailService, MailKitEmailService>();
-
 
 // Automapper
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+// SignalR
+builder.Services.AddSignalR();
+
+// HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -75,10 +84,12 @@ app.UseAuthorization();
 
 app.UseSession();
 
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=News}/{action=All}");
+
+app.MapHub<ChatHub>("/chat");
+app.MapHub<NotificationHub>("/notification");
 
 app.SeedRoles();
 

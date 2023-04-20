@@ -1,34 +1,35 @@
 ﻿using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using SocialConnect.Domain.Extenstions;
+using SocialConnect.Domain.Entities;
 using SocialConnect.Domain.Interfaces;
 
 namespace SocialConnect.WebUI.TagHelpers;
 
-[HtmlTargetElement("groups-request")]
-public class GroupTagHelper : TagHelper
+[HtmlTargetElement("chat-messages")]
+public class ChatTagHelper : TagHelper
 {
-    private readonly IGroupRepository _groupRepository;
-
+    private readonly IChatRepository _chatRepository;
     public string UserId { get; set; } = string.Empty;
-    public string Style { get; set; } = string.Empty;
 
-    public GroupTagHelper(IGroupRepository groupRepository)
+    public ChatTagHelper(IChatRepository chatRepository)
     {
-        _groupRepository = groupRepository;
+        _chatRepository = chatRepository;
     }
-
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        int count = await _groupRepository.GetGroupsRequestsCountAsync(UserId);
-
-        if (count == 0)
+        IReadOnlyCollection<Chat> chats = await _chatRepository.GetAsync(chat =>
+            chat.Users.Any(user => user.UserId == UserId) &&
+            chat.Messages.Any(message =>
+                message.Views.All(view =>
+                    view.UserId != UserId)));
+        int chatsCount = chats.Count();
+        if (chatsCount == 0)
         {
             output.Attributes.SetAttribute("hidden", "hidden");
         }
 
-        output.Attributes.SetAttribute("id", "groups");
+        output.Attributes.SetAttribute("id", "chats");
 
         output.TagMode = TagMode.StartTagAndEndTag;
         
@@ -37,8 +38,6 @@ public class GroupTagHelper : TagHelper
         output.AddClass("bg-warning", HtmlEncoder.Default);
         output.AddClass("rounded-pill", HtmlEncoder.Default);
         output.AddClass("align-middle", HtmlEncoder.Default);
-    
-        output.Attributes.SetAttribute("style", Style);
-        output.Content.SetContent(count.ToString());
+        output.Content.SetContent(chatsCount.ToString());
     }
 }

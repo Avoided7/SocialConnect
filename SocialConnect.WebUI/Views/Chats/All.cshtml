@@ -1,0 +1,46 @@
+﻿@model IReadOnlyCollection<Chat>
+
+@{
+    ViewData["Title"] = "Chats";
+    string userId = User.GetUserId() ?? "";
+}
+
+@foreach (Chat chat in Model)
+{
+    ChatMessage? message = chat.Messages.MaxBy(message => message.WrittenAt);
+    User? messageOwner = message == null ? null : chat.Users.FirstOrDefault(user => user.UserId == message.UserId)?.User;
+    string? username = message?.UserId == userId ? "You" : messageOwner?.UserName;
+    int messageCount = @chat.Messages.Count(message => message.UserId != userId && message.Views.All(view => view.UserId != userId));
+    
+    <div class="card card-body mb-2">
+        @if (chat.IsCoupleChat)
+        {
+            User user = chat.Users.First(chatUser => chatUser.UserId != userId).User!;
+            string status = user.Status.IsOnline ? "-fill text-success" : " text-danger";
+            <a asp-action="Index" asp-route-chatId="@chat.Id" style="text-decoration: none;"><h4>@user.UserName</h4></a>
+            
+            <i class="bi bi-circle@(status)" id="@user.Id"></i>
+            if (messageCount > 0)
+            {
+                <text>@messageCount unreaded</text>
+            }
+            <hr/>
+        }
+
+        <span>
+            @if (message == null)
+            {
+                <text>Nothing here;3</text>
+            }
+            else
+            {
+                <b>@(username): </b>@message.Content
+            }
+            
+            @if (!chat.IsCoupleChat)
+            {
+                <text>, @chat.Users.Count() users</text>
+            }
+        </span>
+    </div>
+}

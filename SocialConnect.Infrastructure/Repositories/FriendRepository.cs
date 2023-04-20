@@ -52,7 +52,7 @@ namespace SocialConnect.Infrastructure.Repositories
                 IReadOnlyCollection<User> friends = await _dbContext.Friends
                                                                             .Where(friend => (!friend.IsAgreed && (friend.FriendId == userId || friend.UserId == userId)) || 
                                                                                                         (friend.IsAgreed && friend.FriendId == userId))
-                                                                            .Select(friend => _dbContext.SocialUsers.First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)))
+                                                                            .Select(friend => _dbContext.SocialUsers.Include(user => user.Status).First(user => user.Id == (friend.FriendId == userId ? friend.UserId : friend.FriendId)))
                                                                             .ToListAsync();
                 return friends;
             }
@@ -97,6 +97,13 @@ namespace SocialConnect.Infrastructure.Repositories
         public async Task<FriendsCouple?> CreateAsync(FriendsCouple entity)
         {
             if(entity.UserId == entity.FriendId)
+            {
+                return null;
+            }
+
+            FriendsCouple? friendsCouple = await _dbContext.Friends.FirstOrDefaultAsync(friend => (friend.UserId == entity.UserId &&
+                                                                                                  friend.FriendId == entity.FriendId));    
+            if(friendsCouple != null)
             {
                 return null;
             }

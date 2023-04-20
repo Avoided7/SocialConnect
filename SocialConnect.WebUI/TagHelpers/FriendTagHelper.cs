@@ -25,9 +25,11 @@ public class FriendTagHelper : TagHelper
 
         if (count == 0)
         {
-            output.SuppressOutput();
-            return;
+            output.Attributes.SetAttribute("hidden", "hidden");
         }
+
+        output.Attributes.SetAttribute("id", "friends");
+
         output.TagMode = TagMode.StartTagAndEndTag;
         
         output.TagName = "span";
